@@ -405,6 +405,8 @@ pub const Mogwai = struct {
                         diff.z = math.floor(diff.z / snap) * snap;
                     }
 
+                    result = .{};
+
                     switch (self.active.?) {
                         GizmoItem.ArrowX => {
                             result.?.position = original.position.add(vec3.new(diff.x, 0., 0.));
