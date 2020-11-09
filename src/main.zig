@@ -101,9 +101,9 @@ const BoundingCollection = struct {
 
 /// All Gizmo visible parts.
 pub const GizmoItem = enum {
-    PlaneYZ,
-    PlaneXY,
-    PlaneXZ,
+    PanelYZ,
+    PanelXY,
+    PanelXZ,
     ArrowX,
     ArrowY,
     ArrowZ,
@@ -342,9 +342,9 @@ pub const Mogwai = struct {
                         intersect_cuboid(self, ray, &self.bb.y, GizmoItem.ArrowY, vec3.up(), &nearest_distance, &hit);
                         intersect_cuboid(self, ray, &self.bb.z, GizmoItem.ArrowZ, vec3.forward(), &nearest_distance, &hit);
 
-                        intersect_cuboid(self, ray, &self.bb.yz, GizmoItem.PlaneYZ, vec3.right(), &nearest_distance, &hit);
-                        intersect_cuboid(self, ray, &self.bb.xz, GizmoItem.PlaneXZ, vec3.up(), &nearest_distance, &hit);
-                        intersect_cuboid(self, ray, &self.bb.xy, GizmoItem.PlaneXY, vec3.forward(), &nearest_distance, &hit);
+                        intersect_cuboid(self, ray, &self.bb.yz, GizmoItem.PanelYZ, vec3.right(), &nearest_distance, &hit);
+                        intersect_cuboid(self, ray, &self.bb.xz, GizmoItem.PanelXZ, vec3.up(), &nearest_distance, &hit);
+                        intersect_cuboid(self, ray, &self.bb.xy, GizmoItem.PanelXY, vec3.forward(), &nearest_distance, &hit);
                     }
 
                     if (mode == Mode.Scale) {
@@ -416,13 +416,13 @@ pub const Mogwai = struct {
                         GizmoItem.ArrowZ => {
                             result.?.position = original.position.add(vec3.new(0., 0., diff.z));
                         },
-                        GizmoItem.PlaneYZ => {
+                        GizmoItem.PanelYZ => {
                             result.?.position = original.position.add(vec3.new(0., diff.y, diff.z));
                         },
-                        GizmoItem.PlaneXZ => {
+                        GizmoItem.PanelXZ => {
                             result.?.position = original.position.add(vec3.new(diff.x, 0., diff.z));
                         },
-                        GizmoItem.PlaneXY => {
+                        GizmoItem.PanelXY => {
                             result.?.position = original.position.add(vec3.new(diff.x, diff.y, 0.));
                         },
                         GizmoItem.ScalerX => {

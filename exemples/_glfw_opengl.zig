@@ -52,7 +52,7 @@ pub fn main() !void {
         .snap_axis = 0.3,
     });
 
-    var camera = Camera.init(vec3.new(0., 0., -3.));
+    var camera = Camera.init(vec3.new(0.2, 0.8, -3.));
     var view = look_at(camera.position, vec3.add(camera.position, camera.front), vec3.up());
     const proj = perspective(45., @intToFloat(f32, WINDOW_WIDTH) / @intToFloat(f32, WINDOW_HEIGHT), 0.1, 100.);
 
@@ -165,9 +165,9 @@ pub fn main() !void {
             switch (gizmo_mode) {
                 Mode.Move => {
                     // Render all panels.
-                    opengl.draw_geometry(&yz, &shader, model, vec4.new(0, 100, 255, if (gizmo.is_hover(GizmoItem.PlaneYZ)) 1 else alpha), true);
-                    opengl.draw_geometry(&xz, &shader, model, vec4.new(100, 255, 0, if (gizmo.is_hover(GizmoItem.PlaneXZ)) 1 else alpha), true);
-                    opengl.draw_geometry(&xy, &shader, model, vec4.new(255, 0, 255, if (gizmo.is_hover(GizmoItem.PlaneXY)) 1 else alpha), true);
+                    opengl.draw_geometry(&yz, &shader, model, vec4.new(0, 100, 255, if (gizmo.is_hover(GizmoItem.PanelYZ)) 1 else alpha), true);
+                    opengl.draw_geometry(&xz, &shader, model, vec4.new(100, 255, 0, if (gizmo.is_hover(GizmoItem.PanelXZ)) 1 else alpha), true);
+                    opengl.draw_geometry(&xy, &shader, model, vec4.new(255, 0, 255, if (gizmo.is_hover(GizmoItem.PanelXY)) 1 else alpha), true);
 
                     // Render all axis.
                     opengl.draw_geometry(&x_axis, &shader, model, vec4.new(255, 0, 0, if (gizmo.is_hover(GizmoItem.ArrowX)) 1 else alpha), true);
