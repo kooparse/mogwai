@@ -141,7 +141,7 @@ pub fn main() !void {
                     our_target_object.transform.position = result.position;
                 },
                 Mode.Rotate => {
-                    our_target_object.transform.rotation = result.rotation.extract_rotation();
+                    our_target_object.transform.rotation = result.rotation;
                 },
                 Mode.Scale => {
                     our_target_object.transform.scale = result.scale;
