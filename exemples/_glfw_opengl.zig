@@ -49,7 +49,7 @@ pub fn main() !void {
         .screen_width = WINDOW_WIDTH,
         .screen_height = WINDOW_HEIGHT,
         .dpi = WINDOW_DPI,
-        .snap = 0.3,
+        .snap_axis = 0.3,
     });
 
     var camera = Camera.init(vec3.new(0., 0., -3.));

@@ -133,7 +133,8 @@ pub const Config = struct {
     dpi: i32 = 1,
 
     /// Snap mode.
-    snap: ?f32 = null,
+    snap_axis: ?f32 = null,
+    snap_angle: ?f32 = null,
 
     /// Number of segments generated for the arcball.
     arcball_segments: usize = 60,
@@ -399,7 +400,7 @@ pub const Mogwai = struct {
                     const original = self.original_transform;
                     var diff = p.sub(self.click_offset);
 
-                    if (self.config.snap) |snap| {
+                    if (self.config.snap_axis) |snap| {
                         diff.x = math.floor(diff.x / snap) * snap;
                         diff.y = math.floor(diff.y / snap) * snap;
                         diff.z = math.floor(diff.z / snap) * snap;
@@ -485,19 +486,16 @@ pub const Mogwai = struct {
                     const dot_product = math.min(1, vec3.dot(self.ended_arm.?, self.started_arm.?));
                     // The `acos` of a dot product will gives us the angle between two vectors, in radians.
                     // We just have to convert it to degrees.
-                    const angle = to_degrees(math.acos(dot_product));
+                    var angle = to_degrees(math.acos(dot_product));
+
+                    if (self.config.snap_angle) |snap| {
+                        angle = math.floor(angle / snap) * snap;
+                    }
 
                     // If angle is less than 1 degree, we don't want to do anything.
                     if (angle < 1) {
                         return null;
                     }
-
-                    // if (self.config.snap) |snap| {
-                    //     // const a = self.started_arm.?
-                    //     // const b = normalize(to);
-                    //     const snap_acos = math.floor(f32, math.acos(dot(a, b)) / angle) * angle;
-                    //     return make_rotation_quat_axis_angle(normalize(cross(a, b)), snappedAcos);
-                    // }
 
                     const cross_product = vec3.cross(self.started_arm.?, self.ended_arm.?).norm();
                     const new_rot = quat.from_axis(angle, cross_product);

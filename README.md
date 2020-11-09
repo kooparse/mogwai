@@ -15,7 +15,8 @@ pub fn main () void {
   var gizmo = Mogwai(.{
     .screen_width   = 800,
     .screen_height  = 600,
-    .snap = 0.5
+    .snap_axis = 0.5,
+    .snap_angle = 5 
   });
 
   // Get all vertices for your renderer.
