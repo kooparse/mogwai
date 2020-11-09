@@ -26,6 +26,8 @@ pub fn main () void {
   // Get all vertices for your renderer.
   const xy_panel = gizmo.meshes.move_panels.xy;
   const yz_panel = gizmo.meshes.move_panels.yz
+  // See https://github.com/kooparse/mogwai/blob/master/exemples/_glfw_opengl.zig#L62-L73
+  // for all meshes.
 
   // Mode is an enum containing all different modes
   // for the gizmo (move, rotate, scale, none).
@@ -59,6 +61,7 @@ pub fn main () void {
   }
 }
 ```
+See https://github.com/kooparse/mogwai/blob/master/exemples/_glfw_opengl.zig for a real exemple.
 
 ## Documentation
 
