@@ -66,7 +66,6 @@ screen_width | i32 | Width of the screen (required)
 screen_height | i32 | Height of the screen (required)
 dpi | i32 | Pixel ratio of your monitor
 snap | ?f32 | Snap when dragging gizmo, value is equals to floor factor
-arcball_segments| usize | Number of segments for rotation circles
 arcball_radius | f32 | Radius of the rotation circles
 arcball_thickness | f32 | Width of the rotation circle borders
 panel_size| f32 | The width/height of panels

@@ -136,8 +136,6 @@ pub const Config = struct {
     snap_axis: ?f32 = null,
     snap_angle: ?f32 = null,
 
-    /// Number of segments generated for the arcball.
-    arcball_segments: usize = 60,
     /// Radius of the arcball.
     arcball_radius: f32 = 1,
     /// The size of the handle when in Rotate mode.
@@ -735,12 +733,12 @@ pub const Mogwai = struct {
         var j: usize = 0;
         var k: usize = 0;
         while (j < segment_vertex.len) : (j += 1) {
-            const pp = if (j == 0) segment_vertex[segment_vertex.len - 1] else segment_vertex[j - 1];
             const p0 = segment_vertex[j];
             const p1 = if (j == segment_vertex.len - 1) segment_vertex[0] else segment_vertex[j + 1];
-            const p2 = if (j == segment_vertex.len - 2) segment_vertex[0] else if (j == segment_vertex.len - 1) segment_vertex[1] else segment_vertex[j + 2];
+            const previous = if (j == 0) segment_vertex[segment_vertex.len - 1] else segment_vertex[j - 1];
+            const next = if (j == segment_vertex.len - 2) segment_vertex[0] else if (j == segment_vertex.len - 1) segment_vertex[1] else segment_vertex[j + 2];
 
-            for (create_segment(p0, p1, p2, pp, thickness, axis)) |v, idx| {
+            for (create_segment(p0, p1, previous, next, thickness, axis)) |v, idx| {
                 vertex[k + idx] = v;
             }
 
@@ -756,14 +754,14 @@ pub const Mogwai = struct {
     /// correctly compute the cross-section, which gives us sharp angles.
     /// More details in those posts: 
     /// https://forum.libcinder.org/topic/smooth-thick-lines-using-geometry-shader.
-    fn create_segment(p0: vec3, p1: vec3, p2: vec3, pp: vec3, thickness: f32, axis: GizmoItem) [18]f32 {
+    fn create_segment(p0: vec3, p1: vec3, previous: vec3, next: vec3, thickness: f32, axis: GizmoItem) [18]f32 {
         // Compute middle line.
         const line = vec3.sub(p1, p0);
         var normal: vec3 = undefined;
 
         // Compute tangeants.
-        const t0 = vec3.add(vec3.sub(p0, pp).norm(), vec3.sub(p1, p0).norm()).norm();
-        const t1 = vec3.add(vec3.sub(p2, p1).norm(), vec3.sub(p1, p0).norm()).norm();
+        const t0 = vec3.add(vec3.sub(p0, previous).norm(), vec3.sub(p1, p0).norm()).norm();
+        const t1 = vec3.add(vec3.sub(next, p1).norm(), vec3.sub(p1, p0).norm()).norm();
 
         var miter0: vec3 = undefined;
         var miter1: vec3 = undefined;
