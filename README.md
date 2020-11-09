@@ -2,7 +2,11 @@
 
 Graphic utility used to manipulate objects in 3D for scene editing (commonly called Gizmo).
 
-If you would like to contribute, don't hesitate! ;)
+It's a straightforward and simple Gizmo, all the manipulation is computed in this library 
+while it gives you all the verticies for your renderer; At the end, 
+you'll get a decomposed matrix (three vec3 for translation/rotation/scale). 
+
+This library uses only [zalgebra](https://github.com/kooparse/zalgebra) and the `std`!
 
 <img src="https://github.com/kooparse/mogwai/blob/master/.github/mogwai.png" alt="preview" />
 
