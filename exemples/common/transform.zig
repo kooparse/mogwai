@@ -14,11 +14,26 @@ pub const Transform = struct {
     }
 
     pub fn get_model(self: *const Transform) mat4 {
-        var translate = mat4.from_translate(self.position);
         var rot = self.rotation.to_mat4();
-        var scale = mat4.from_scale(self.scale);
 
-        return mat4.mult(scale, mat4.mult(translate, rot));
+        rot.data[0][0] *= self.scale.x;
+        rot.data[0][1] *= self.scale.x;
+        rot.data[0][2] *= self.scale.x;
+
+        rot.data[1][0] *= self.scale.y;
+        rot.data[1][1] *= self.scale.y;
+        rot.data[1][2] *= self.scale.y;
+
+        rot.data[2][0] *= self.scale.z;
+        rot.data[2][1] *= self.scale.z;
+        rot.data[2][2] *= self.scale.z;
+
+
+        rot.data[3][0] = self.position.x;
+        rot.data[3][1] = self.position.y;
+        rot.data[3][2] = self.position.z;
+
+        return rot;
     }
 };
 

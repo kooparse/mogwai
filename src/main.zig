@@ -2,7 +2,7 @@ const std = @import("std");
 const math = std.math;
 const print = std.debug.print;
 const panic = std.debug.panic;
-usingnamespace @import("./libs/zalgebra/src/main.zig");
+usingnamespace @import("zalgebra");
 
 pub const Mode = enum { None, Move, Rotate, Scale };
 pub const State = enum { Idle, Hover, Dragging };
@@ -406,7 +406,8 @@ pub const Mogwai = struct {
 
                     result = .{};
 
-                    print("scale data: {d}\n", .{target.extract_scale()});
+                    // Used to clamp scale values at Epsilon.
+                    const epsilon_vec = vec3.new(math.f32_epsilon, math.f32_epsilon, math.f32_epsilon);
 
                     switch (self.active.?) {
                         GizmoItem.ArrowX => {
@@ -428,13 +429,13 @@ pub const Mogwai = struct {
                             result.?.position = original.position.add(vec3.new(diff.x, diff.y, 0.));
                         },
                         GizmoItem.ScalerX => {
-                            result.?.scale = original.scale.add(vec3.new(diff.x, 0., 0.));
+                            result.?.scale = vec3.max(original.scale.add(vec3.new(diff.x, 0., 0.)), epsilon_vec);
                         },
                         GizmoItem.ScalerY => {
-                            result.?.scale = original.scale.add(vec3.new(0., diff.y, 0.));
+                            result.?.scale = vec3.max(original.scale.add(vec3.new(0., diff.y, 0.)), epsilon_vec);
                         },
                         GizmoItem.ScalerZ => {
-                            result.?.scale = original.scale.add(vec3.new(0., 0., -diff.z));
+                            result.?.scale = vec3.max(original.scale.add(vec3.new(0., 0., -diff.z)), epsilon_vec);
                         },
                         else => {}
                     }
