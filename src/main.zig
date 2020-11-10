@@ -406,6 +406,8 @@ pub const Mogwai = struct {
 
                     result = .{};
 
+                    print("scale data: {d}\n", .{target.extract_scale()});
+
                     switch (self.active.?) {
                         GizmoItem.ArrowX => {
                             result.?.position = original.position.add(vec3.new(diff.x, 0., 0.));

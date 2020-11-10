@@ -1,3 +1,0 @@
-[submodule "src/libs/zalgebra"]
-	path = src/libs/zalgebra
-	url = git@github.com:kooparse/zalgebra.git
