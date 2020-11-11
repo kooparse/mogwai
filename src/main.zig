@@ -1,6 +1,5 @@
 const std = @import("std");
 const math = std.math;
-const print = std.debug.print;
 const panic = std.debug.panic;
 usingnamespace @import("zalgebra");
 
@@ -452,7 +451,8 @@ pub const Mogwai = struct {
                     intersect_circle(self, ray, GizmoItem.RotateZ, vec3.forward(), &nearest_distance, &hit);
 
                     if (hit != null) {
-                        self.original_transform.rotation = quat.from_mat4(target);
+                        const normalized = target.ortho_normalize();
+                        self.original_transform.rotation = quat.from_mat4(normalized);
                         self.state = State.Hover;
                         self.click_offset = hit.?;
                     }
@@ -494,9 +494,7 @@ pub const Mogwai = struct {
                     }
 
                     // If angle is less than 1 degree, we don't want to do anything.
-                    if (angle < 1) {
-                        return null;
-                    }
+                    if (angle < 1) return null;
 
                     const cross_product = vec3.cross(self.started_arm.?, self.ended_arm.?).norm();
                     const new_rot = quat.from_axis(angle, cross_product);
