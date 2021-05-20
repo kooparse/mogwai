@@ -40,6 +40,7 @@ pub fn build(b: *Builder) void {
         }
 
         exe.linkSystemLibrary("glfw");
+        exe.linkSystemLibrary("epoxy");
         exe.install();
 
         const play = b.step("run", "Run Mogwai exemple");

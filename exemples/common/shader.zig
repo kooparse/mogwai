@@ -30,7 +30,7 @@ pub const Shader = struct {
 
                 const message = try c_allocator.alloc(u8, @intCast(usize, error_size));
                 c.glGetShaderInfoLog(sp.vertex_id, error_size, &error_size, message.ptr);
-                panic("Error compiling vertex shader:\n{}\n", .{message.ptr});
+                panic("Error compiling vertex shader:\n{s}\n", .{message});
             }
         }
 
@@ -50,7 +50,7 @@ pub const Shader = struct {
 
                 const message = try c_allocator.alloc(u8, @intCast(usize, error_size));
                 c.glGetShaderInfoLog(sp.fragment_id, error_size, &error_size, message.ptr);
-                panic("Error compiling fragment shader:\n{}\n", .{message.ptr});
+                panic("Error compiling fragment shader:\n{s}\n", .{message});
             }
         }
 
@@ -67,7 +67,7 @@ pub const Shader = struct {
             c.glGetProgramiv(sp.program_id, c.GL_INFO_LOG_LENGTH, &error_size);
             const message = try c_allocator.alloc(u8, @intCast(usize, error_size));
             c.glGetProgramInfoLog(sp.program_id, error_size, &error_size, message.ptr);
-            panic("Error linking shader program: {}\n", .{message.ptr});
+            panic("Error linking shader program: {s}\n", .{message});
         }
 
         // Cleanup shaders (from gl doc).
