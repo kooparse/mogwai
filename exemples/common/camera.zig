@@ -4,16 +4,16 @@ usingnamespace @import("zalgebra");
 
 pub const Camera = struct {
     position: vec3,
-    front: vec3 = vec3.new(0., 0., 1.),
-    up: vec3 = vec3.new(0., 1., 0.),
-    yaw: f64 = 90.,
-    pitch: f64 = 0.,
+    front: vec3 = vec3.new(0, 0, 1),
+    up: vec3 = vec3.new(0, 1, 0),
+    yaw: f64 = 90,
+    pitch: f64 = 0,
 
-    speed: f32 = 3.,
+    speed: f32 = 3,
     is_first_mouse: bool = true,
 
-    last_cursor_pos_x: f64 = 0.,
-    last_cursor_pos_y: f64 = 0.,
+    last_cursor_pos_x: f64 = 0,
+    last_cursor_pos_y: f64 = 0,
 
     should_update: bool = true,
 
@@ -58,8 +58,8 @@ pub const Camera = struct {
             }
         }
 
-        var pos_x: f64 = 0.;
-        var pos_y: f64 = 0.;
+        var pos_x: f64 = 0;
+        var pos_y: f64 = 0;
         c.glfwGetCursorPos(window, &pos_x, &pos_y);
 
         if (self.is_first_mouse or !self.should_update) {

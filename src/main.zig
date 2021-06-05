@@ -118,9 +118,9 @@ pub const GizmoItem = enum {
 /// gizmo manipulation. It's the result type of the `manipulate` method.
 /// Hint: To transform `quat` into `vec3`, use the `extract_rotation` method.
 pub const GizmoTransform = struct {
-    position: vec3 = vec3.new(0., 0., 0.),
+    position: vec3 = vec3.new(0, 0, 0),
     rotation: quat = quat.new(0, 0, 0, 0),
-    scale: vec3 = vec3.new(1., 1., 1.),
+    scale: vec3 = vec3.new(1, 1, 1),
 };
 
 /// Configuration.
@@ -148,7 +148,7 @@ pub const Config = struct {
     panel_width: f32 = 0.02,
 
     /// Length of axis.
-    axis_length: f32  = 1.,
+    axis_length: f32  = 1,
     /// Axis boldness size.
     axis_size: f32  = 0.05,
 
@@ -410,31 +410,31 @@ pub const Mogwai = struct {
 
                     switch (self.active.?) {
                         GizmoItem.ArrowX => {
-                            result.?.position = original.position.add(vec3.new(diff.x, 0., 0.));
+                            result.?.position = original.position.add(vec3.new(diff.x, 0, 0));
                         },
                         GizmoItem.ArrowY => {
-                            result.?.position = original.position.add(vec3.new(0., diff.y, 0.));
+                            result.?.position = original.position.add(vec3.new(0, diff.y, 0));
                         },
                         GizmoItem.ArrowZ => {
-                            result.?.position = original.position.add(vec3.new(0., 0., diff.z));
+                            result.?.position = original.position.add(vec3.new(0, 0, diff.z));
                         },
                         GizmoItem.PanelYZ => {
-                            result.?.position = original.position.add(vec3.new(0., diff.y, diff.z));
+                            result.?.position = original.position.add(vec3.new(0, diff.y, diff.z));
                         },
                         GizmoItem.PanelXZ => {
-                            result.?.position = original.position.add(vec3.new(diff.x, 0., diff.z));
+                            result.?.position = original.position.add(vec3.new(diff.x, 0, diff.z));
                         },
                         GizmoItem.PanelXY => {
-                            result.?.position = original.position.add(vec3.new(diff.x, diff.y, 0.));
+                            result.?.position = original.position.add(vec3.new(diff.x, diff.y, 0));
                         },
                         GizmoItem.ScalerX => {
-                            result.?.scale = vec3.max(original.scale.add(vec3.new(diff.x, 0., 0.)), epsilon_vec);
+                            result.?.scale = vec3.max(original.scale.add(vec3.new(diff.x, 0, 0)), epsilon_vec);
                         },
                         GizmoItem.ScalerY => {
-                            result.?.scale = vec3.max(original.scale.add(vec3.new(0., diff.y, 0.)), epsilon_vec);
+                            result.?.scale = vec3.max(original.scale.add(vec3.new(0, diff.y, 0)), epsilon_vec);
                         },
                         GizmoItem.ScalerZ => {
-                            result.?.scale = vec3.max(original.scale.add(vec3.new(0., 0., -diff.z)), epsilon_vec);
+                            result.?.scale = vec3.max(original.scale.add(vec3.new(0, 0, -diff.z)), epsilon_vec);
                         },
                         else => {}
                     }
@@ -595,13 +595,13 @@ pub const Mogwai = struct {
     /// Simple raycast function used to intersect cursor and gizmo objects.
     fn raycast(pos: vec3, cam: Camera, config: Config, cursor: Cursor) Ray {
         const clip_ndc = vec2.new(
-            (@floatCast(f32, cursor.x) * @intToFloat(f32, config.dpi)) / @intToFloat(f32, config.screen_width) - 1., 
-            1. - (@floatCast(f32, cursor.y) * @intToFloat(f32, config.dpi)) / @intToFloat(f32, config.screen_height)
+            (@floatCast(f32, cursor.x) * @intToFloat(f32, config.dpi)) / @intToFloat(f32, config.screen_width) - 1, 
+            1 - (@floatCast(f32, cursor.y) * @intToFloat(f32, config.dpi)) / @intToFloat(f32, config.screen_height)
         );
 
-        const clip_space = vec4.new(clip_ndc.x, clip_ndc.y, -1., 1.);
+        const clip_space = vec4.new(clip_ndc.x, clip_ndc.y, -1, 1);
         const eye_tmp = mat4.mult_by_vec4(mat4.inv(cam.proj), clip_space);
-        const world_tmp = mat4.mult_by_vec4(mat4.inv(cam.view), vec4.new(eye_tmp.x, eye_tmp.y, -1, 0.));
+        const world_tmp = mat4.mult_by_vec4(mat4.inv(cam.view), vec4.new(eye_tmp.x, eye_tmp.y, -1, 0));
 
         return .{
             .origin = pos,

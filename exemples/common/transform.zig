@@ -1,9 +1,9 @@
 usingnamespace @import("zalgebra");
 
 pub const Transform = struct {
-    position: vec3 = vec3.new(0., 0., 0.),
+    position: vec3 = vec3.new(0, 0, 0),
     rotation: quat = quat.new(1, 0, 0, 0),
-    scale: vec3 = vec3.new(1., 1., 1.),
+    scale: vec3 = vec3.new(1, 1, 1),
 
     pub fn new(position: vec3, rotation: quat, scale: vec3) Transform {
         return .{

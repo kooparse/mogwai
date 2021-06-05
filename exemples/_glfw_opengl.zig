@@ -51,9 +51,9 @@ pub fn main() !void {
         .dpi = WINDOW_DPI,
     });
 
-    var camera = Camera.init(vec3.new(0.2, 0.8, -3.));
+    var camera = Camera.init(vec3.new(0.2, 0.8, -3));
     var view = look_at(camera.position, vec3.add(camera.position, camera.front), vec3.up());
-    const proj = perspective(45., @intToFloat(f32, WINDOW_WIDTH) / @intToFloat(f32, WINDOW_HEIGHT), 0.1, 100.);
+    const proj = perspective(45, @intToFloat(f32, WINDOW_WIDTH) / @intToFloat(f32, WINDOW_HEIGHT), 0.1, 100);
 
     var our_target_object = try opengl.GeometryObject.new(&primitive.CUBE_VERTICES, &primitive.CUBE_INDICES, &primitive.CUBE_UV_COORDS, &primitive.CUBE_COLORS, null);
     defer our_target_object.deinit();
@@ -109,8 +109,8 @@ pub fn main() !void {
         shader.setMat4("view", &view);
 
         const is_pressed = c.glfwGetMouseButton(window, c.GLFW_MOUSE_BUTTON_LEFT) == c.GLFW_PRESS;
-        var pos_x: f64 = 0.;
-        var pos_y: f64 = 0.;
+        var pos_x: f64 = 0;
+        var pos_y: f64 = 0;
         c.glfwGetCursorPos(window, &pos_x, &pos_y);
 
         camera.update(window, delta_time, c.glfwGetKey(window, c.GLFW_KEY_LEFT_SHIFT) == c.GLFW_PRESS);
