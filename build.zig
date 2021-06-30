@@ -1,6 +1,5 @@
 const std = @import("std");
 const Builder = std.build.Builder;
-const FileSource = std.build.FileSource;
 const Pkg = std.build.Pkg;
 const builtin = @import("builtin");
 
@@ -12,7 +11,7 @@ pub fn build(b: *Builder) void {
         var tests = b.addTest("src/main.zig");
         tests.addPackage(.{
             .name = "zalgebra",
-            .path = FileSource.relative("src/libs/zalgebra/src/main.zig"),
+            .path = "src/libs/zalgebra/src/main.zig",
         });
         tests.setBuildMode(mode);
 
@@ -27,13 +26,13 @@ pub fn build(b: *Builder) void {
 
         const zalgebra = Pkg{
             .name = "zalgebra",
-            .path = FileSource.relative("src/libs/zalgebra/src/main.zig"),
+            .path = "src/libs/zalgebra/src/main.zig",
         };
 
         exe.addPackage(zalgebra);
         exe.addPackage(.{
             .name = "mogwai",
-            .path = FileSource.relative("src/main.zig"),
+            .path = "src/main.zig",
             .dependencies = &[_]Pkg{zalgebra},
         });
 
