@@ -35,7 +35,7 @@ pub const GeometryObject = struct {
 
     const Self = @This();
 
-    pub fn new(vertices: []const f32, indices: ?[]const i32, uvs: ?[]const f32, colors: ?[]const f32, tx_path: ?[]const u8) !Self {
+    pub fn new(vertices: []const f32, indices: ?[]const i32, uvs: ?[]const f32, colors: ?[]const f32, _: ?[]const u8) !Self {
         var obj: Self = undefined;
         obj.transform = Transform{};
 

@@ -1,5 +1,6 @@
 const std = @import("std");
 const Builder = std.build.Builder;
+const FileSource = std.build.FileSource;
 const Pkg = std.build.Pkg;
 const builtin = @import("builtin");
 
@@ -9,7 +10,10 @@ pub fn build(b: *Builder) void {
     // Build step for the library
     {
         var tests = b.addTest("src/main.zig");
-        tests.addPackage(.{ .name = "zalgebra", .path = "src/libs/zalgebra/src/main.zig" });
+        tests.addPackage(.{
+            .name = "zalgebra",
+            .path = FileSource.relative("src/libs/zalgebra/src/main.zig"),
+        });
         tests.setBuildMode(mode);
 
         const test_step = b.step("test", "Run tests");
@@ -21,13 +25,17 @@ pub fn build(b: *Builder) void {
         var exe = b.addExecutable("glfw_opengl", "exemples/_glfw_opengl.zig");
         exe.setBuildMode(mode);
 
-        const zalgebra = Pkg {
+        const zalgebra = Pkg{
             .name = "zalgebra",
-            .path = "src/libs/zalgebra/src/main.zig",
+            .path = FileSource.relative("src/libs/zalgebra/src/main.zig"),
         };
 
         exe.addPackage(zalgebra);
-        exe.addPackage(.{ .name = "mogwai", .path = "src/main.zig", .dependencies = &[_]Pkg{zalgebra}});
+        exe.addPackage(.{
+            .name = "mogwai",
+            .path = FileSource.relative("src/main.zig"),
+            .dependencies = &[_]Pkg{zalgebra},
+        });
 
         switch (builtin.os.tag) {
             .macos => {
@@ -48,6 +56,5 @@ pub fn build(b: *Builder) void {
         run.step.dependOn(b.getInstallStep());
 
         play.dependOn(&run.step);
-
     }
 }
