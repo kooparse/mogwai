@@ -8,15 +8,15 @@ pub const State = enum { Idle, Hover, Dragging };
 
 /// Ray used to store the projected cursor ray.
 const Ray = struct {
-    origin: vec3, 
-    dir: vec3
+    origin: Vec3, 
+    dir: Vec3
 };
 
 /// Bounding Box used for collision detection.
 /// Also used to construct box vertices.
 const BoundingBox = struct {
-    min: vec3,
-    max: vec3,
+    min: Vec3,
+    max: Vec3,
 };
 
 /// Collection of bounding boxes.
@@ -49,48 +49,48 @@ const BoundingCollection = struct {
 
         return .{
             .x = BoundingBox {
-                .min = vec3.zero(),
-                .max = vec3.new(config.axis_length, config.axis_size, config.axis_size)
+                .min = Vec3.zero(),
+                .max = Vec3.new(config.axis_length, config.axis_size, config.axis_size)
             },
 
             .y = BoundingBox {
-                .min = vec3.zero(),
-                .max = vec3.new(config.axis_size, config.axis_length, config.axis_size)
+                .min = Vec3.zero(),
+                .max = Vec3.new(config.axis_size, config.axis_length, config.axis_size)
             },
 
             .z = BoundingBox {
-                .min = vec3.zero(),
-                .max = vec3.new(config.axis_size, config.axis_size, -config.axis_length)
+                .min = Vec3.zero(),
+                .max = Vec3.new(config.axis_size, config.axis_size, -config.axis_length)
             },
 
             .yz = BoundingBox {
-                .min = vec3.new(0, config.panel_offset, -config.panel_offset),
-                .max = vec3.new(config.panel_width, max_pos, -max_pos)
+                .min = Vec3.new(0, config.panel_offset, -config.panel_offset),
+                .max = Vec3.new(config.panel_width, max_pos, -max_pos)
             },
 
             .xz = BoundingBox {
-                .min = vec3.new(config.panel_offset, 0, -config.panel_offset),
-                .max = vec3.new(max_pos, config.panel_width, -max_pos)
+                .min = Vec3.new(config.panel_offset, 0, -config.panel_offset),
+                .max = Vec3.new(max_pos, config.panel_width, -max_pos)
             },
 
             .xy = BoundingBox {
-                .min = vec3.new(config.panel_offset, config.panel_offset, 0),
-                .max = vec3.new(max_pos, max_pos, config.panel_width)
+                .min = Vec3.new(config.panel_offset, config.panel_offset, 0),
+                .max = Vec3.new(max_pos, max_pos, config.panel_width)
             },
 
             .x_box = BoundingBox {
-                .min = vec3.new(config.axis_length, -config.scale_box_size , -config.scale_box_size),
-                .max= vec3.new(config.axis_length + config.scale_box_size * 2, config.scale_box_size, config.scale_box_size),
+                .min = Vec3.new(config.axis_length, -config.scale_box_size , -config.scale_box_size),
+                .max= Vec3.new(config.axis_length + config.scale_box_size * 2, config.scale_box_size, config.scale_box_size),
             },
 
             .y_box = BoundingBox {
-                .min = vec3.new(-config.scale_box_size, config.axis_length, -config.scale_box_size),
-                .max= vec3.new(config.scale_box_size, config.axis_length + config.scale_box_size * 2, config.scale_box_size),
+                .min = Vec3.new(-config.scale_box_size, config.axis_length, -config.scale_box_size),
+                .max= Vec3.new(config.scale_box_size, config.axis_length + config.scale_box_size * 2, config.scale_box_size),
             },
 
             .z_box = BoundingBox {
-                .min = vec3.new(-config.scale_box_size , -config.scale_box_size, -config.axis_length),
-                .max= vec3.new( config.scale_box_size, config.scale_box_size, -(config.axis_length + config.scale_box_size * 2),),
+                .min = Vec3.new(-config.scale_box_size , -config.scale_box_size, -config.axis_length),
+                .max= Vec3.new( config.scale_box_size, config.scale_box_size, -(config.axis_length + config.scale_box_size * 2),),
             }
         };
     }
@@ -116,11 +116,11 @@ pub const GizmoItem = enum {
 
 /// This is the computed result from the given target matrix after
 /// gizmo manipulation. It's the result type of the `manipulate` method.
-/// Hint: To transform `quat` into `vec3`, use the `extract_rotation` method.
+/// Hint: To transform `Quat` into `Vec3`, use the `extract_rotation` method.
 pub const GizmoTransform = struct {
-    position: vec3 = vec3.new(0, 0, 0),
-    rotation: quat = quat.new(0, 0, 0, 0),
-    scale: vec3 = vec3.new(1, 1, 1),
+    position: Vec3 = Vec3.new(0, 0, 0),
+    rotation: Quat = Quat.new(0, 0, 0, 0),
+    scale: Vec3 = Vec3.new(1, 1, 1),
 };
 
 /// Configuration.
@@ -157,8 +157,8 @@ pub const Config = struct {
 };
 
 const Camera = struct {
-    view: mat4,
-    proj: mat4,
+    view: Mat4,
+    proj: Mat4,
 };
 
 const Cursor = struct {
@@ -229,9 +229,9 @@ pub const Mogwai = struct {
 
     /// This is the point representing the 
     /// nearest successful collision.
-    click_offset: vec3 = vec3.zero(),
+    click_offset: Vec3 = Vec3.zero(),
     /// Current position of the gizmo, usually the position of the target.
-    position: vec3 = vec3.zero(),
+    position: Vec3 = Vec3.zero(),
     /// All constructed meshes are stored there, used for client's renderer.
     meshes: struct {
         move_panels: MeshPanels,
@@ -244,12 +244,12 @@ pub const Mogwai = struct {
     /// We extract those information from the given target matrix.
     original_transform: GizmoTransform = .{},
     /// Active axis (X, Y, Z).
-    active_axis: ?vec3 = null,
+    active_axis: ?Vec3 = null,
 
     /// Used for compute theta on Rotate mode.
     /// Theta is the angle between `started_arm` and `ended_arm`.
-    started_arm: ?vec3 = null,
-    ended_arm: ?vec3 = null,
+    started_arm: ?Vec3 = null,
+    ended_arm: ?Vec3 = null,
 
     const Self = @This();
 
@@ -265,8 +265,8 @@ pub const Mogwai = struct {
                 .scale_axis = make_scale_axis(config.axis_size, config.axis_length, config.scale_box_size),
             },
             .cam = .{
-                .view = mat4.identity(),
-                .proj = mat4.identity(),
+                .view = Mat4.identity(),
+                .proj = Mat4.identity(),
             },
             .cursor = .{
                 .x = 0.0,
@@ -277,19 +277,19 @@ pub const Mogwai = struct {
     }
 
     /// Return if given object is hovered by the cursor.
-    pub fn is_hover(self: *const Self, object: GizmoItem) bool {
+    pub fn isHover(self: *const Self, object: GizmoItem) bool {
         return self.active != null and self.active.? == object;
     }
 
     /// Set the screen size.
-    pub fn set_viewport(self: *Self, width: i32, height: i32, dpi: i32) void {
+    pub fn setViewport(self: *Self, width: i32, height: i32, dpi: i32) void {
         self.config.screen_width = width;
         self.config.screen_height = height;
         self.viewport.dpi = dpi;
     }
 
     /// Set the cursor position and if it was pressed.
-    pub fn set_cursor(self: *Self, x: f64, y: f64, is_pressed: bool) void {
+    pub fn setCursor(self: *Self, x: f64, y: f64, is_pressed: bool) void {
         self.cursor.x = x;
         self.cursor.y = y;
         self.cursor.is_pressed = is_pressed;
@@ -298,7 +298,7 @@ pub const Mogwai = struct {
         if (!is_pressed) {
             self.state = State.Idle;
             self.active = null;
-            self.click_offset = vec3.zero();
+            self.click_offset = Vec3.zero();
             self.original_transform = .{};
             self.active_axis = null;
             self.started_arm = null;
@@ -308,13 +308,13 @@ pub const Mogwai = struct {
 
     /// Set the view matrix and projection matrix, needed to compute
     /// the position of the eye, and all intersection in space.
-    pub fn set_camera(self: *Self, view: mat4, proj: mat4) void {
+    pub fn setCamera(self: *Self, view: Mat4, proj: Mat4) void {
         self.cam.view = view;
         self.cam.proj = proj;
     }
 
     /// Manipulate the gizmo from the given cursor state and position.
-    pub fn manipulate(self: *Self, target: mat4, mode: Mode) ?GizmoTransform {
+    pub fn manipulate(self: *Self, target: Mat4, mode: Mode) ?GizmoTransform {
         // If mode is none, we don't want to compute something.
         if (mode == Mode.None) {
             return null;
@@ -323,43 +323,43 @@ pub const Mogwai = struct {
         var result: ?GizmoTransform = null;
 
         // Gizmo's position in world space.
-        self.position = target.extract_translation();
+        self.position = target.extractTranslation();
         // Position of the camera, where the ray will be cast.
-        const eye = self.cam.view.inv().extract_translation();
+        const eye = self.cam.view.inv().extractTranslation();
         // Raycast used for collision detection.
         const ray = raycast(eye, self.cam, self.config, self.cursor);
 
         switch (mode) {
             Mode.Scale,
             Mode.Move => {
-                var hit: ?vec3 = null;
+                var hit: ?Vec3 = null;
                 var nearest_distance: f32 = math.f32_max;
 
                 if (self.state != State.Dragging) {
                     if (mode == Mode.Move) {
-                        intersect_cuboid(self, ray, &self.bb.x, GizmoItem.ArrowX, vec3.right(), &nearest_distance, &hit);
-                        intersect_cuboid(self, ray, &self.bb.y, GizmoItem.ArrowY, vec3.up(), &nearest_distance, &hit);
-                        intersect_cuboid(self, ray, &self.bb.z, GizmoItem.ArrowZ, vec3.forward(), &nearest_distance, &hit);
+                        intersect_cuboid(self, ray, &self.bb.x, GizmoItem.ArrowX, Vec3.right(), &nearest_distance, &hit);
+                        intersect_cuboid(self, ray, &self.bb.y, GizmoItem.ArrowY, Vec3.up(), &nearest_distance, &hit);
+                        intersect_cuboid(self, ray, &self.bb.z, GizmoItem.ArrowZ, Vec3.forward(), &nearest_distance, &hit);
 
-                        intersect_cuboid(self, ray, &self.bb.yz, GizmoItem.PanelYZ, vec3.right(), &nearest_distance, &hit);
-                        intersect_cuboid(self, ray, &self.bb.xz, GizmoItem.PanelXZ, vec3.up(), &nearest_distance, &hit);
-                        intersect_cuboid(self, ray, &self.bb.xy, GizmoItem.PanelXY, vec3.forward(), &nearest_distance, &hit);
+                        intersect_cuboid(self, ray, &self.bb.yz, GizmoItem.PanelYZ, Vec3.right(), &nearest_distance, &hit);
+                        intersect_cuboid(self, ray, &self.bb.xz, GizmoItem.PanelXZ, Vec3.up(), &nearest_distance, &hit);
+                        intersect_cuboid(self, ray, &self.bb.xy, GizmoItem.PanelXY, Vec3.forward(), &nearest_distance, &hit);
                     }
 
                     if (mode == Mode.Scale) {
-                        intersect_cuboid(self, ray, &self.bb.x, GizmoItem.ScalerX, vec3.right(), &nearest_distance, &hit);
-                        intersect_cuboid(self, ray, &self.bb.y, GizmoItem.ScalerY, vec3.up(), &nearest_distance, &hit);
-                        intersect_cuboid(self, ray, &self.bb.z, GizmoItem.ScalerZ, vec3.forward(), &nearest_distance, &hit);
+                        intersect_cuboid(self, ray, &self.bb.x, GizmoItem.ScalerX, Vec3.right(), &nearest_distance, &hit);
+                        intersect_cuboid(self, ray, &self.bb.y, GizmoItem.ScalerY, Vec3.up(), &nearest_distance, &hit);
+                        intersect_cuboid(self, ray, &self.bb.z, GizmoItem.ScalerZ, Vec3.forward(), &nearest_distance, &hit);
 
-                        intersect_cuboid(self, ray, &self.bb.x_box, GizmoItem.ScalerX, vec3.right(), &nearest_distance, &hit);
-                        intersect_cuboid(self, ray, &self.bb.y_box, GizmoItem.ScalerY, vec3.up(), &nearest_distance, &hit);
-                        intersect_cuboid(self, ray, &self.bb.z_box, GizmoItem.ScalerZ, vec3.forward(), &nearest_distance, &hit);
+                        intersect_cuboid(self, ray, &self.bb.x_box, GizmoItem.ScalerX, Vec3.right(), &nearest_distance, &hit);
+                        intersect_cuboid(self, ray, &self.bb.y_box, GizmoItem.ScalerY, Vec3.up(), &nearest_distance, &hit);
+                        intersect_cuboid(self, ray, &self.bb.z_box, GizmoItem.ScalerZ, Vec3.forward(), &nearest_distance, &hit);
                     }
 
                     if (hit != null)  {
                         self.click_offset = hit.?;
-                        self.original_transform.position = target.extract_translation();
-                        self.original_transform.scale = target.extract_scale();
+                        self.original_transform.position = target.extractTranslation();
+                        self.original_transform.scale = target.extractScale();
                         self.state = State.Hover;
                     }
                 }
@@ -376,8 +376,8 @@ pub const Mogwai = struct {
                         GizmoItem.ArrowX,
                         GizmoItem.ArrowY,
                         GizmoItem.ArrowZ => {
-                            const plane_tangent = vec3.cross(axis, vec3.sub(position, eye));
-                            plane_normal = vec3.cross(axis, plane_tangent);
+                            const plane_tangent = Vec3.cross(axis, Vec3.sub(position, eye));
+                            plane_normal = Vec3.cross(axis, plane_tangent);
                         }, 
                         else => {}
                     }
@@ -406,35 +406,35 @@ pub const Mogwai = struct {
                     result = .{};
 
                     // Used to clamp scale values at Epsilon.
-                    const epsilon_vec = vec3.new(math.f32_epsilon, math.f32_epsilon, math.f32_epsilon);
+                    const epsilon_vec = Vec3.new(math.f32_epsilon, math.f32_epsilon, math.f32_epsilon);
 
                     switch (self.active.?) {
                         GizmoItem.ArrowX => {
-                            result.?.position = original.position.add(vec3.new(diff.x, 0, 0));
+                            result.?.position = original.position.add(Vec3.new(diff.x, 0, 0));
                         },
                         GizmoItem.ArrowY => {
-                            result.?.position = original.position.add(vec3.new(0, diff.y, 0));
+                            result.?.position = original.position.add(Vec3.new(0, diff.y, 0));
                         },
                         GizmoItem.ArrowZ => {
-                            result.?.position = original.position.add(vec3.new(0, 0, diff.z));
+                            result.?.position = original.position.add(Vec3.new(0, 0, diff.z));
                         },
                         GizmoItem.PanelYZ => {
-                            result.?.position = original.position.add(vec3.new(0, diff.y, diff.z));
+                            result.?.position = original.position.add(Vec3.new(0, diff.y, diff.z));
                         },
                         GizmoItem.PanelXZ => {
-                            result.?.position = original.position.add(vec3.new(diff.x, 0, diff.z));
+                            result.?.position = original.position.add(Vec3.new(diff.x, 0, diff.z));
                         },
                         GizmoItem.PanelXY => {
-                            result.?.position = original.position.add(vec3.new(diff.x, diff.y, 0));
+                            result.?.position = original.position.add(Vec3.new(diff.x, diff.y, 0));
                         },
                         GizmoItem.ScalerX => {
-                            result.?.scale = vec3.max(original.scale.add(vec3.new(diff.x, 0, 0)), epsilon_vec);
+                            result.?.scale = Vec3.max(original.scale.add(Vec3.new(diff.x, 0, 0)), epsilon_vec);
                         },
                         GizmoItem.ScalerY => {
-                            result.?.scale = vec3.max(original.scale.add(vec3.new(0, diff.y, 0)), epsilon_vec);
+                            result.?.scale = Vec3.max(original.scale.add(Vec3.new(0, diff.y, 0)), epsilon_vec);
                         },
                         GizmoItem.ScalerZ => {
-                            result.?.scale = vec3.max(original.scale.add(vec3.new(0, 0, -diff.z)), epsilon_vec);
+                            result.?.scale = Vec3.max(original.scale.add(Vec3.new(0, 0, -diff.z)), epsilon_vec);
                         },
                         else => {}
                     }
@@ -442,17 +442,17 @@ pub const Mogwai = struct {
             },
 
             Mode.Rotate => {
-                var hit: ?vec3 = null;
+                var hit: ?Vec3 = null;
                 var nearest_distance: f32 = math.f32_max;
 
                 if (self.state != State.Dragging) {
-                    intersect_circle(self, ray, GizmoItem.RotateX, vec3.right(), &nearest_distance, &hit);
-                    intersect_circle(self, ray, GizmoItem.RotateY, vec3.up(), &nearest_distance, &hit);
-                    intersect_circle(self, ray, GizmoItem.RotateZ, vec3.forward(), &nearest_distance, &hit);
+                    intersect_circle(self, ray, GizmoItem.RotateX, Vec3.right(), &nearest_distance, &hit);
+                    intersect_circle(self, ray, GizmoItem.RotateY, Vec3.up(), &nearest_distance, &hit);
+                    intersect_circle(self, ray, GizmoItem.RotateZ, Vec3.forward(), &nearest_distance, &hit);
 
                     if (hit != null) {
-                        const normalized = target.ortho_normalize();
-                        self.original_transform.rotation = quat.from_mat4(normalized);
+                        const normalized = target.orthoNormalize();
+                        self.original_transform.rotation = Quat.fromMat4(normalized);
                         self.state = State.Hover;
                         self.click_offset = hit.?;
                     }
@@ -475,7 +475,7 @@ pub const Mogwai = struct {
                 if (hit) |p| {
                     self.state = State.Dragging;
 
-                    const arm = vec3.sub(self.position, p).norm();
+                    const arm = Vec3.sub(self.position, p).norm();
 
                     if (self.started_arm == null) {
                         self.started_arm = arm;
@@ -484,10 +484,10 @@ pub const Mogwai = struct {
                     self.ended_arm = arm;
 
                     // Now, we want to get the angle in degrees of those arms.
-                    const dot_product = math.min(1, vec3.dot(self.ended_arm.?, self.started_arm.?));
+                    const dot_product = math.min(1, Vec3.dot(self.ended_arm.?, self.started_arm.?));
                     // The `acos` of a dot product will gives us the angle between two vectors, in radians.
                     // We just have to convert it to degrees.
-                    var angle = to_degrees(math.acos(dot_product));
+                    var angle = toDegrees(math.acos(dot_product));
 
                     if (self.config.snap_angle) |snap| {
                         angle = math.floor(angle / snap) * snap;
@@ -496,9 +496,9 @@ pub const Mogwai = struct {
                     // If angle is less than 1 degree, we don't want to do anything.
                     if (angle < 1) return null;
 
-                    const cross_product = vec3.cross(self.started_arm.?, self.ended_arm.?).norm();
-                    const new_rot = quat.from_axis(angle, cross_product);
-                    const rotation = quat.mult(new_rot, self.original_transform.rotation);
+                    const cross_product = Vec3.cross(self.started_arm.?, self.ended_arm.?).norm();
+                    const new_rot = Quat.fromAxis(angle, cross_product);
+                    const rotation = Quat.mult(new_rot, self.original_transform.rotation);
 
                     result = .{ .rotation = rotation };
                 }
@@ -511,7 +511,7 @@ pub const Mogwai = struct {
 
     /// Collision between ray and axis-aligned bounding box.
     /// If hit happen, return the distance between the origin and the hit.
-    fn ray_vs_aabb(min: vec3, max: vec3, r: Ray) ?f32 {
+    fn ray_vs_aabb(min: Vec3, max: Vec3, r: Ray) ?f32 {
         var tmin = -math.inf_f32;
         var tmax = math.inf_f32;
 
@@ -535,13 +535,13 @@ pub const Mogwai = struct {
         return null;
     }
 
-    fn ray_vs_plane(normal: vec3, plane_pos: vec3, ray: Ray) ?f32 {
+    fn ray_vs_plane(normal: Vec3, plane_pos: Vec3, ray: Ray) ?f32 {
         var intersection: f32 = undefined;
-        const denom: f32 = vec3.dot(normal, ray.dir);
+        const denom: f32 = Vec3.dot(normal, ray.dir);
 
         if (math.absFloat(denom) > 1e-6) {
-            const line = vec3.sub(plane_pos, ray.origin);
-            intersection = vec3.dot(line, normal) / denom;
+            const line = Vec3.sub(plane_pos, ray.origin);
+            intersection = Vec3.dot(line, normal) / denom;
 
             return if (intersection > 0) intersection else null;
         }
@@ -550,11 +550,11 @@ pub const Mogwai = struct {
         return null;
     }
 
-    fn ray_vs_disk(normal: vec3, disk_pos: vec3, ray: Ray, radius: f32) ?f32 {
+    fn ray_vs_disk(normal: Vec3, disk_pos: Vec3, ray: Ray, radius: f32) ?f32 {
         if (ray_vs_plane(normal, disk_pos, ray)) |intersection| {
-            const p = vec3.add(ray.origin, vec3.scale(ray.dir, intersection));
-            const v = vec3.sub(p, disk_pos);
-            const d2 = vec3.dot(v, v);
+            const p = Vec3.add(ray.origin, Vec3.scale(ray.dir, intersection));
+            const v = Vec3.sub(p, disk_pos);
+            const d2 = Vec3.dot(v, v);
 
             return if (math.sqrt(d2) <= radius) intersection else null;
         }
@@ -562,7 +562,7 @@ pub const Mogwai = struct {
         return null;
     }
 
-    fn intersect_cuboid(self: *Self, ray: Ray, bb: *const BoundingBox, selected_object: GizmoItem, axis: vec3, near_dist: *f32, near_hit: *?vec3) void {
+    fn intersect_cuboid(self: *Self, ray: Ray, bb: *const BoundingBox, selected_object: GizmoItem, axis: Vec3, near_dist: *f32, near_hit: *?Vec3) void {
         const min = self.position.add(bb.min);
         const max = self.position.add(bb.max);
 
@@ -579,7 +579,7 @@ pub const Mogwai = struct {
         }
     }
 
-    fn intersect_circle(self: *Self, ray: Ray, selected_object: GizmoItem, axis: vec3, near_dist: *f32, near_hit: *?vec3) void {
+    fn intersect_circle(self: *Self, ray: Ray, selected_object: GizmoItem, axis: Vec3, near_dist: *f32, near_hit: *?Vec3) void {
         const outer_hit = ray_vs_disk(axis, self.position, ray, self.config.arcball_radius + self.config.arcball_thickness);
         const inner_hit = ray_vs_disk(axis, self.position, ray, self.config.arcball_radius - self.config.arcball_thickness);
 
@@ -593,25 +593,25 @@ pub const Mogwai = struct {
     }
 
     /// Simple raycast function used to intersect cursor and gizmo objects.
-    fn raycast(pos: vec3, cam: Camera, config: Config, cursor: Cursor) Ray {
-        const clip_ndc = vec2.new(
+    fn raycast(pos: Vec3, cam: Camera, config: Config, cursor: Cursor) Ray {
+        const clip_ndc = Vec2.new(
             (@floatCast(f32, cursor.x) * @intToFloat(f32, config.dpi)) / @intToFloat(f32, config.screen_width) - 1, 
             1 - (@floatCast(f32, cursor.y) * @intToFloat(f32, config.dpi)) / @intToFloat(f32, config.screen_height)
         );
 
-        const clip_space = vec4.new(clip_ndc.x, clip_ndc.y, -1, 1);
-        const eye_tmp = mat4.mult_by_vec4(mat4.inv(cam.proj), clip_space);
-        const world_tmp = mat4.mult_by_vec4(mat4.inv(cam.view), vec4.new(eye_tmp.x, eye_tmp.y, -1, 0));
+        const clip_space = Vec4.new(clip_ndc.x, clip_ndc.y, -1, 1);
+        const eye_tmp = Mat4.multByVec4(Mat4.inv(cam.proj), clip_space);
+        const world_tmp = Mat4.multByVec4(Mat4.inv(cam.view), Vec4.new(eye_tmp.x, eye_tmp.y, -1, 0));
 
         return .{
             .origin = pos,
-            .dir = vec3.new(world_tmp.x, world_tmp.y, world_tmp.z).norm(),
+            .dir = Vec3.new(world_tmp.x, world_tmp.y, world_tmp.z).norm(),
         };
     }
 
     /// Construct cuboid from given bounds.
     /// Used to construct cubes, axis and planes.
-    fn construct_cuboid(min_bounds: vec3, max_bounds: vec3) [72]f32 {
+    fn construct_cuboid(min_bounds: Vec3, max_bounds: Vec3) [72]f32 {
         const a = min_bounds;
         const b = max_bounds;
 
@@ -638,9 +638,9 @@ pub const Mogwai = struct {
 
         const max = panel_offset + panel_size;
 
-        mesh.yz = construct_cuboid(vec3.new(0, panel_offset, -panel_offset), vec3.new(panel_width, max, -max));
-        mesh.xz = construct_cuboid(vec3.new(panel_offset, 0, -panel_offset), vec3.new(max, panel_width, -max));
-        mesh.xy = construct_cuboid(vec3.new(panel_offset, panel_offset, 0), vec3.new(max, max, panel_width));
+        mesh.yz = construct_cuboid(Vec3.new(0, panel_offset, -panel_offset), Vec3.new(panel_width, max, -max));
+        mesh.xz = construct_cuboid(Vec3.new(panel_offset, 0, -panel_offset), Vec3.new(max, panel_width, -max));
+        mesh.xy = construct_cuboid(Vec3.new(panel_offset, panel_offset, 0), Vec3.new(max, max, panel_width));
         mesh.indices = CUBOID_INDICES;
 
         return mesh;
@@ -650,9 +650,9 @@ pub const Mogwai = struct {
     fn make_move_axis(size: f32, length: f32) MeshAxis {
         var mesh: MeshAxis = undefined;
 
-        mesh.x = construct_cuboid(vec3.new(0, 0, 0), vec3.new(length, size, size));
-        mesh.y = construct_cuboid(vec3.new(0, 0, 0), vec3.new(size, length, size));
-        mesh.z = construct_cuboid(vec3.new(0, 0, 0), vec3.new(size, size, -length));
+        mesh.x = construct_cuboid(Vec3.new(0, 0, 0), Vec3.new(length, size, size));
+        mesh.y = construct_cuboid(Vec3.new(0, 0, 0), Vec3.new(size, length, size));
+        mesh.z = construct_cuboid(Vec3.new(0, 0, 0), Vec3.new(size, size, -length));
 
         mesh.indices = CUBOID_INDICES;
 
@@ -667,18 +667,18 @@ pub const Mogwai = struct {
         const half_size = size * 0.5;
         const total_size = length + box_size * 2;
 
-        const x_axis = construct_cuboid(vec3.new(0, 0, 0), vec3.new(length, size, size));
-        const x_box = construct_cuboid(vec3.new(length, -box_size + half_size, -box_size + half_size), vec3.new(total_size, box_size + half_size, box_size + half_size));
+        const x_axis = construct_cuboid(Vec3.new(0, 0, 0), Vec3.new(length, size, size));
+        const x_box = construct_cuboid(Vec3.new(length, -box_size + half_size, -box_size + half_size), Vec3.new(total_size, box_size + half_size, box_size + half_size));
         std.mem.copy(f32, &mesh.x, x_axis[0..]);
         std.mem.copy(f32, mesh.x[72..], x_box[0..]);
 
-        const y_axis = construct_cuboid(vec3.new(0, 0, 0), vec3.new(size, length, size));
-        const y_box = construct_cuboid(vec3.new(-box_size + half_size, length, -box_size + half_size), vec3.new(box_size + half_size, total_size, box_size + half_size));
+        const y_axis = construct_cuboid(Vec3.new(0, 0, 0), Vec3.new(size, length, size));
+        const y_box = construct_cuboid(Vec3.new(-box_size + half_size, length, -box_size + half_size), Vec3.new(box_size + half_size, total_size, box_size + half_size));
         std.mem.copy(f32, &mesh.y, y_axis[0..]);
         std.mem.copy(f32, mesh.y[72..], y_box[0..]);
 
-        const z_axis = construct_cuboid(vec3.new(0, 0, 0), vec3.new(size, size, -length));
-        const z_box = construct_cuboid(vec3.new(-box_size + half_size, -box_size + half_size, -length), vec3.new(box_size + half_size, box_size + half_size, -total_size));
+        const z_axis = construct_cuboid(Vec3.new(0, 0, 0), Vec3.new(size, size, -length));
+        const z_box = construct_cuboid(Vec3.new(-box_size + half_size, -box_size + half_size, -length), Vec3.new(box_size + half_size, box_size + half_size, -total_size));
         std.mem.copy(f32, &mesh.z, z_axis[0..]);
         std.mem.copy(f32, mesh.z[72..], z_box[0..]);
 
@@ -714,17 +714,17 @@ pub const Mogwai = struct {
         var vertex: [segments * 18 * 3]f32 = undefined;
 
         const max_deg: i32 = 360;
-        var segment_vertex: [segments]vec3 = undefined;
+        var segment_vertex: [segments]Vec3 = undefined;
 
         while (deg < max_deg) : (deg += @divExact(max_deg, segments)) {
-            const angle = to_radians(@intToFloat(f32, deg));
+            const angle = toRadians(@intToFloat(f32, deg));
             const x = math.cos(angle) * radius;
             const y = math.sin(angle) * radius;
 
             segment_vertex[i] = switch (axis) {
-                GizmoItem.RotateX => vec3.new(x, y, 0),
-                GizmoItem.RotateY => vec3.new(0, y, x),
-                GizmoItem.RotateZ => vec3.new(x, 0, y),
+                GizmoItem.RotateX => Vec3.new(x, y, 0),
+                GizmoItem.RotateY => Vec3.new(0, y, x),
+                GizmoItem.RotateZ => Vec3.new(x, 0, y),
                 else => std.debug.panic("Object selected isn't a rotate axis.\n", .{})
             };
 
@@ -755,47 +755,47 @@ pub const Mogwai = struct {
     /// correctly compute the cross-section, which gives us sharp angles.
     /// More details in those posts: 
     /// https://forum.libcinder.org/topic/smooth-thick-lines-using-geometry-shader.
-    fn create_segment(p0: vec3, p1: vec3, previous: vec3, next: vec3, thickness: f32, axis: GizmoItem) [18]f32 {
+    fn create_segment(p0: Vec3, p1: Vec3, previous: Vec3, next: Vec3, thickness: f32, axis: GizmoItem) [18]f32 {
         // Compute middle line.
-        const line = vec3.sub(p1, p0);
-        var normal: vec3 = undefined;
+        const line = Vec3.sub(p1, p0);
+        var normal: Vec3 = undefined;
 
         // Compute tangeants.
-        const t0 = vec3.add(vec3.sub(p0, previous).norm(), vec3.sub(p1, p0).norm()).norm();
-        const t1 = vec3.add(vec3.sub(next, p1).norm(), vec3.sub(p1, p0).norm()).norm();
+        const t0 = Vec3.add(Vec3.sub(p0, previous).norm(), Vec3.sub(p1, p0).norm()).norm();
+        const t1 = Vec3.add(Vec3.sub(next, p1).norm(), Vec3.sub(p1, p0).norm()).norm();
 
-        var miter0: vec3 = undefined;
-        var miter1: vec3 = undefined;
+        var miter0: Vec3 = undefined;
+        var miter1: Vec3 = undefined;
 
         switch (axis) {
             GizmoItem.RotateX => {
-                normal = vec3.new(-line.y, line.x, 0).norm();
-                miter0 = vec3.new(-t0.y, t0.x, 0);
-                miter1 = vec3.new(-t1.y, t1.x, 0);
+                normal = Vec3.new(-line.y, line.x, 0).norm();
+                miter0 = Vec3.new(-t0.y, t0.x, 0);
+                miter1 = Vec3.new(-t1.y, t1.x, 0);
 
             },
             GizmoItem.RotateY => {
-                normal = vec3.new(0, -line.z, line.y).norm();
-                miter0 = vec3.new(0, -t0.z, t0.y);
-                miter1 = vec3.new(0, -t1.z, t1.y);
+                normal = Vec3.new(0, -line.z, line.y).norm();
+                miter0 = Vec3.new(0, -t0.z, t0.y);
+                miter1 = Vec3.new(0, -t1.z, t1.y);
 
             },
             GizmoItem.RotateZ => {
-                normal = vec3.new(-line.z, 0, line.x).norm();
-                miter0 = vec3.new(-t0.z, 0, t0.x);
-                miter1 = vec3.new(-t1.z, 0, t1.x);
+                normal = Vec3.new(-line.z, 0, line.x).norm();
+                miter0 = Vec3.new(-t0.z, 0, t0.x);
+                miter1 = Vec3.new(-t1.z, 0, t1.x);
 
             },
             else => std.debug.panic("Object selected isn't a rotate axis.\n", .{})
         }
 
-        const length0 = thickness / vec3.dot(miter0, normal);
-        const length1 = thickness / vec3.dot(miter1, normal);
+        const length0 = thickness / Vec3.dot(miter0, normal);
+        const length1 = thickness / Vec3.dot(miter1, normal);
 
-        const a = vec3.add(p0, vec3.scale(miter0, length0));
-        const b = vec3.add(p1, vec3.scale(miter1, length1));
-        const e = vec3.sub(p0, vec3.scale(miter0, length0));
-        const d = vec3.sub(p1, vec3.scale(miter1, length1));
+        const a = Vec3.add(p0, Vec3.scale(miter0, length0));
+        const b = Vec3.add(p1, Vec3.scale(miter1, length1));
+        const e = Vec3.sub(p0, Vec3.scale(miter0, length0));
+        const d = Vec3.sub(p1, Vec3.scale(miter1, length1));
 
         return .{
             a.x, a.y, a.z,

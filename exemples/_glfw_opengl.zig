@@ -51,8 +51,8 @@ pub fn main() !void {
         .dpi = WINDOW_DPI,
     });
 
-    var camera = Camera.init(vec3.new(0.2, 0.8, -3));
-    var view = look_at(camera.position, vec3.add(camera.position, camera.front), vec3.up());
+    var camera = Camera.init(Vec3.new(0.2, 0.8, -3));
+    var view = lookAt(camera.position, Vec3.add(camera.position, camera.front), Vec3.up());
     const proj = perspective(45, @intToFloat(f32, WINDOW_WIDTH) / @intToFloat(f32, WINDOW_HEIGHT), 0.1, 100);
 
     var our_target_object = try opengl.GeometryObject.new(&primitive.CUBE_VERTICES, &primitive.CUBE_INDICES, &primitive.CUBE_UV_COORDS, &primitive.CUBE_COLORS, null);
@@ -117,13 +117,13 @@ pub fn main() !void {
 
         if (c.glfwGetKey(window, c.GLFW_KEY_LEFT_SHIFT) == c.GLFW_PRESS) {
             c.glfwSetInputMode(window, c.GLFW_CURSOR, c.GLFW_CURSOR_DISABLED);
-            view = mat4.look_at(camera.position, vec3.add(camera.position, camera.front), camera.up);
+            view = lookAt(camera.position, Vec3.add(camera.position, camera.front), camera.up);
         } else {
             c.glfwSetInputMode(window, c.GLFW_CURSOR, c.GLFW_CURSOR_NORMAL);
         }
 
-        gizmo.set_cursor(pos_x, pos_y, is_pressed);
-        gizmo.set_camera(view, proj);
+        gizmo.setCursor(pos_x, pos_y, is_pressed);
+        gizmo.setCamera(view, proj);
 
         if (c.glfwGetKey(window, c.GLFW_KEY_M) == c.GLFW_PRESS) {
             gizmo_mode = Mode.Move;
@@ -159,31 +159,31 @@ pub fn main() !void {
             c.glBlendFunc(c.GL_SRC_ALPHA, c.GL_ONE_MINUS_SRC_ALPHA);
 
             const alpha = 0.5;
-            const model = mat4.from_translate(gizmo.position);
+            const model = Mat4.fromTranslate(gizmo.position);
 
             switch (gizmo_mode) {
                 Mode.Move => {
                     // Render all panels.
-                    opengl.draw_geometry(&yz, &shader, model, vec4.new(0, 100, 255, if (gizmo.is_hover(GizmoItem.PanelYZ)) 1 else alpha), true);
-                    opengl.draw_geometry(&xz, &shader, model, vec4.new(100, 255, 0, if (gizmo.is_hover(GizmoItem.PanelXZ)) 1 else alpha), true);
-                    opengl.draw_geometry(&xy, &shader, model, vec4.new(255, 0, 255, if (gizmo.is_hover(GizmoItem.PanelXY)) 1 else alpha), true);
+                    opengl.draw_geometry(&yz, &shader, model, Vec4.new(0, 100, 255, if (gizmo.isHover(GizmoItem.PanelYZ)) 1 else alpha), true);
+                    opengl.draw_geometry(&xz, &shader, model, Vec4.new(100, 255, 0, if (gizmo.isHover(GizmoItem.PanelXZ)) 1 else alpha), true);
+                    opengl.draw_geometry(&xy, &shader, model, Vec4.new(255, 0, 255, if (gizmo.isHover(GizmoItem.PanelXY)) 1 else alpha), true);
 
                     // Render all axis.
-                    opengl.draw_geometry(&x_axis, &shader, model, vec4.new(255, 0, 0, if (gizmo.is_hover(GizmoItem.ArrowX)) 1 else alpha), true);
-                    opengl.draw_geometry(&y_axis, &shader, model, vec4.new(0, 255, 0, if (gizmo.is_hover(GizmoItem.ArrowY)) 1 else alpha), true);
-                    opengl.draw_geometry(&z_axis, &shader, model, vec4.new(0, 0, 255, if (gizmo.is_hover(GizmoItem.ArrowZ)) 1 else alpha), true);
+                    opengl.draw_geometry(&x_axis, &shader, model, Vec4.new(255, 0, 0, if (gizmo.isHover(GizmoItem.ArrowX)) 1 else alpha), true);
+                    opengl.draw_geometry(&y_axis, &shader, model, Vec4.new(0, 255, 0, if (gizmo.isHover(GizmoItem.ArrowY)) 1 else alpha), true);
+                    opengl.draw_geometry(&z_axis, &shader, model, Vec4.new(0, 0, 255, if (gizmo.isHover(GizmoItem.ArrowZ)) 1 else alpha), true);
                 },
                 Mode.Rotate => {
                     c.glEnable(c.GL_DEPTH_TEST);
-                    opengl.draw_geometry(&rotate_x, &shader, model, vec4.new(255, 0, 0, if (gizmo.is_hover(GizmoItem.RotateZ)) 1 else alpha), true);
-                    opengl.draw_geometry(&rotate_y, &shader, model, vec4.new(0, 255, 0, if (gizmo.is_hover(GizmoItem.RotateX)) 1 else alpha), true);
-                    opengl.draw_geometry(&rotate_z, &shader, model, vec4.new(0, 0, 255, if (gizmo.is_hover(GizmoItem.RotateY)) 1 else alpha), true);
+                    opengl.draw_geometry(&rotate_x, &shader, model, Vec4.new(255, 0, 0, if (gizmo.isHover(GizmoItem.RotateZ)) 1 else alpha), true);
+                    opengl.draw_geometry(&rotate_y, &shader, model, Vec4.new(0, 255, 0, if (gizmo.isHover(GizmoItem.RotateX)) 1 else alpha), true);
+                    opengl.draw_geometry(&rotate_z, &shader, model, Vec4.new(0, 0, 255, if (gizmo.isHover(GizmoItem.RotateY)) 1 else alpha), true);
                     c.glDisable(c.GL_DEPTH_TEST);
                 },
                 Mode.Scale => {
-                    opengl.draw_geometry(&scale_x, &shader, model, vec4.new(255, 0, 0, if (gizmo.is_hover(GizmoItem.ScalerX)) 1 else alpha), true);
-                    opengl.draw_geometry(&scale_y, &shader, model, vec4.new(0, 255, 0, if (gizmo.is_hover(GizmoItem.ScalerY)) 1 else alpha), true);
-                    opengl.draw_geometry(&scale_z, &shader, model, vec4.new(0, 0, 255, if (gizmo.is_hover(GizmoItem.ScalerZ)) 1 else alpha), true);
+                    opengl.draw_geometry(&scale_x, &shader, model, Vec4.new(255, 0, 0, if (gizmo.isHover(GizmoItem.ScalerX)) 1 else alpha), true);
+                    opengl.draw_geometry(&scale_y, &shader, model, Vec4.new(0, 255, 0, if (gizmo.isHover(GizmoItem.ScalerY)) 1 else alpha), true);
+                    opengl.draw_geometry(&scale_z, &shader, model, Vec4.new(0, 0, 255, if (gizmo.isHover(GizmoItem.ScalerZ)) 1 else alpha), true);
                 },
                 else => {}
             }

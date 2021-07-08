@@ -35,9 +35,9 @@ pub fn main () void {
 
   while(true) {
     // After pulling cursor state and positions:
-    gizmo.set_cursor(pos_x, pos_y, is_pressed);
+    gizmo.setCursor(pos_x, pos_y, is_pressed);
     // After updating the view matrix (camera moving...).
-    gizmo.set_camera(view, proj);
+    gizmo.setCamera(view, proj);
 
     // You just have to pass a mode and the model matrix from the
     // selected object from your scene.
@@ -47,7 +47,7 @@ pub fn main () void {
                 target.transform.position = result.position;
             },
             Mode.Rotate => {
-                target.transform.rotation = result.rotation.extract_rotation();
+                target.transform.rotation = result.rotation.extractRotation();
             },
             Mode.Scale => {
                 target.transform.scale = result.scale;

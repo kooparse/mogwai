@@ -158,7 +158,7 @@ pub const RenderDataObject = struct {
 
 };
 
-pub fn draw_geometry(obj: *const GeometryObject, shader: *const Shader, model: mat4, color: ?vec4, only_color: bool) void {
+pub fn draw_geometry(obj: *const GeometryObject, shader: *const Shader, model: Mat4, color: ?Vec4, only_color: bool) void {
     c.glBindVertexArray(obj.gl.vao);
     shader.setMat4("model", &model);
 
@@ -188,8 +188,8 @@ pub fn draw_geometry(obj: *const GeometryObject, shader: *const Shader, model: m
     }
 
     // Cleanup uniforms.
-    shader.setRgba("color", &vec4.new(10, 100, 50, 1));
-    shader.setMat4("model", &mat4.identity());
+    shader.setRgba("color", &Vec4.new(10, 100, 50, 1));
+    shader.setMat4("model", &Mat4.identity());
     shader.setBool("with_texture", false);
     shader.setBool("with_color", false);
 }

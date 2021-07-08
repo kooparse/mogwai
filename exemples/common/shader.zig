@@ -77,9 +77,9 @@ pub const Shader = struct {
         return sp;
     }
 
-    pub fn setMat4(sp: Shader, name: [*c]const u8, value: *const mat4) void {
+    pub fn setMat4(sp: Shader, name: [*c]const u8, value: *const Mat4) void {
         const id = c.glGetUniformLocation(sp.program_id, name);
-        c.glUniformMatrix4fv(id, 1, c.GL_FALSE, value.get_data());
+        c.glUniformMatrix4fv(id, 1, c.GL_FALSE, value.getData());
     }
 
     pub fn setBool(sp: Shader, name: [*c]const u8, value: bool) void {
@@ -92,12 +92,12 @@ pub const Shader = struct {
         c.glUniform1f(id, value);
     }
 
-    pub fn setRgb(sp: Shader, name: [*c]const u8, value: *const vec3) void {
+    pub fn setRgb(sp: Shader, name: [*c]const u8, value: *const Vec3) void {
         const id = c.glGetUniformLocation(sp.program_id, name);
         c.glUniform3f(id, value.x / 255.0, value.y / 255.0, value.z / 255.0);
     }
 
-    pub fn setRgba(sp: Shader, name: [*c]const u8, value: *const vec4) void {
+    pub fn setRgba(sp: Shader, name: [*c]const u8, value: *const Vec4) void {
         const id = c.glGetUniformLocation(sp.program_id, name);
         c.glUniform4f(id, value.x / 255.0, value.y / 255.0, value.z / 255.0, value.w);
     }

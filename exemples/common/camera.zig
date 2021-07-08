@@ -3,9 +3,9 @@ const math = @import("std").math;
 usingnamespace @import("zalgebra");
 
 pub const Camera = struct {
-    position: vec3,
-    front: vec3 = vec3.new(0, 0, 1),
-    up: vec3 = vec3.new(0, 1, 0),
+    position: Vec3,
+    front: Vec3 = Vec3.new(0, 0, 1),
+    up: Vec3 = Vec3.new(0, 1, 0),
     yaw: f64 = 90,
     pitch: f64 = 0,
 
@@ -19,7 +19,7 @@ pub const Camera = struct {
 
     const Self = @This();
 
-    pub fn init(position: vec3) Self {
+    pub fn init(position: Vec3) Self {
         return Self{ .position = position };
     }
 
@@ -88,10 +88,10 @@ pub const Camera = struct {
         if (self.pitch < -89.0)
             self.pitch = -89.0;
 
-        var direction: vec3 = undefined;
-        direction.x = @floatCast(f32, math.cos(to_radians(self.yaw)) * math.cos(to_radians(self.pitch)));
-        direction.y = @floatCast(f32, math.sin(to_radians(self.pitch)));
-        direction.z = @floatCast(f32, math.sin(to_radians(self.yaw)) * math.cos(to_radians(self.pitch)));
+        var direction: Vec3 = undefined;
+        direction.x = @floatCast(f32, math.cos(toRadians(self.yaw)) * math.cos(toRadians(self.pitch)));
+        direction.y = @floatCast(f32, math.sin(toRadians(self.pitch)));
+        direction.z = @floatCast(f32, math.sin(toRadians(self.yaw)) * math.cos(toRadians(self.pitch)));
         self.front = direction.norm();
     }
 };
