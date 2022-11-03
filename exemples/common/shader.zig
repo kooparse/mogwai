@@ -1,7 +1,12 @@
-usingnamespace @import("zalgebra");
-const c = @import("c.zig");
-const c_allocator = @import("std").heap.c_allocator;
-const panic = @import("std").debug.panic;
+const std = @import("std");
+const c = @import("c.zig").glfw;
+const za = @import("zalgebra");
+const c_allocator = std.heap.c_allocator;
+const panic = std.debug.panic;
+
+const Vec3 = za.Vec3;
+const Vec4 = za.Vec4;
+const Mat4 = za.Mat4;
 
 pub const Shader = struct {
     name: []const u8,
@@ -94,11 +99,11 @@ pub const Shader = struct {
 
     pub fn setRgb(sp: Shader, name: [*c]const u8, value: *const Vec3) void {
         const id = c.glGetUniformLocation(sp.program_id, name);
-        c.glUniform3f(id, value.x / 255.0, value.y / 255.0, value.z / 255.0);
+        c.glUniform3f(id, value.x() / 255.0, value.y() / 255.0, value.z() / 255.0);
     }
 
     pub fn setRgba(sp: Shader, name: [*c]const u8, value: *const Vec4) void {
         const id = c.glGetUniformLocation(sp.program_id, name);
-        c.glUniform4f(id, value.x / 255.0, value.y / 255.0, value.z / 255.0, value.w);
+        c.glUniform4f(id, value.x() / 255.0, value.y() / 255.0, value.z() / 255.0, value.w());
     }
 };

@@ -1,4 +1,7 @@
-usingnamespace @import("zalgebra");
+const za = @import("zalgebra");
+const Vec3 = za.Vec3;
+const Quat = za.Quat;
+const Mat4 = za.Mat4;
 
 pub const Transform = struct {
     position: Vec3 = Vec3.new(0, 0, 0),
@@ -18,6 +21,6 @@ pub const Transform = struct {
         const scale = Mat4.fromScale(self.scale);
         const transform = Mat4.fromTranslate(self.position);
 
-        return transform.mult(rotation.mult(scale));
+        return transform.mul(rotation.mul(scale));
     }
 };

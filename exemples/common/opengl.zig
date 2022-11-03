@@ -1,15 +1,17 @@
-const c = @import("c.zig");
+const c = @import("c.zig").glfw;
 const std = @import("std");
 const math = std.math;
 const warn = std.debug.warn;
-
-usingnamespace @import("shader.zig");
-usingnamespace @import("zalgebra");
-usingnamespace @import("transform.zig");
-
 const ArrayList = std.ArrayList;
-
 const gpa = std.heap.page_allocator;
+
+const za = @import("zalgebra");
+const Vec3 = za.Vec3;
+const Vec4 = za.Vec4;
+const Mat4 = za.Mat4;
+
+const Shader = @import("shader.zig").Shader;
+const Transform = @import("transform.zig").Transform;
 
 const Texture = struct {
     id: u32,
@@ -20,36 +22,32 @@ const Texture = struct {
 
 pub const Mesh = struct {
     vertices: ArrayList(f32),
-    indices: ?ArrayList(i32),
-    uvs: ?ArrayList(f32),
-    colors: ?ArrayList(f32),
+    indices: ?ArrayList(i32) = null,
+    colors: ?ArrayList(f32) = null,
 };
-
 
 pub const GeometryObject = struct {
     gl: RenderDataObject,
     mesh: Mesh,
-    texture: ?Texture,
 
     transform: Transform,
 
     const Self = @This();
 
-    pub fn new(vertices: []const f32, indices: ?[]const i32, uvs: ?[]const f32, colors: ?[]const f32, _: ?[]const u8) !Self {
-        var obj: Self = undefined;
-        obj.transform = Transform{};
+    pub fn new(vertices: []const f32, indices: ?[]const i32, colors: ?[]const f32, _: ?[]const u8) !Self {
+        var obj: Self = .{
+            .transform = Transform{},
+            .gl = undefined,
+            .mesh = .{
+                .vertices = ArrayList(f32).init(gpa),
+            },
+        };
 
-        obj.mesh.vertices = ArrayList(f32).init(gpa);
         try obj.mesh.vertices.appendSlice(vertices);
 
         if (indices) |data| {
             obj.mesh.indices = ArrayList(i32).init(gpa);
             try obj.mesh.indices.?.appendSlice(data);
-        }
-
-        if (uvs) |data| {
-            obj.mesh.uvs = ArrayList(f32).init(gpa);
-            try obj.mesh.uvs.?.appendSlice(data);
         }
 
         if (colors) |data| {
@@ -66,10 +64,6 @@ pub const GeometryObject = struct {
 
         if (self.mesh.indices) |indices| {
             indices.deinit();
-        }
-
-        if (self.mesh.uvs) |uv| {
-            uv.deinit();
         }
 
         if (self.mesh.colors) |colors| {
@@ -93,10 +87,6 @@ pub const RenderDataObject = struct {
 
         var total = @intCast(isize, mesh.vertices.items.len) * @sizeOf(f32);
 
-        if (mesh.uvs) |uvs| {
-            total += @intCast(isize, uvs.items.len) * @sizeOf(f32);
-        }
-
         if (mesh.colors) |colors| {
             total += @intCast(isize, colors.items.len) * @sizeOf(f32);
         }
@@ -119,23 +109,12 @@ pub const RenderDataObject = struct {
             cursor += size;
         }
 
-        // Uvs batches
-        if (mesh.uvs) |uvs| {
-            var size = @intCast(isize, uvs.items.len) * @sizeOf(f32);
-            c.glBufferSubData(c.GL_ARRAY_BUFFER, cursor, size, uvs.items.ptr);
-
-            c.glVertexAttribPointer(1, 2, c.GL_FLOAT, c.GL_FALSE, 2 * @sizeOf(f32), @intToPtr(*const c_void, @intCast(usize, cursor)));
-            c.glEnableVertexAttribArray(1);
-
-            cursor += size;
-        }
-
         // Colors batches
         if (mesh.colors) |colors| {
             var size = @intCast(isize, colors.items.len) * @sizeOf(f32);
             c.glBufferSubData(c.GL_ARRAY_BUFFER, cursor, size, colors.items.ptr);
 
-            c.glVertexAttribPointer(2, 3, c.GL_FLOAT, c.GL_FALSE, 3 * @sizeOf(f32), @intToPtr(*const c_void, @intCast(usize, cursor)));
+            c.glVertexAttribPointer(2, 3, c.GL_FLOAT, c.GL_FALSE, 3 * @sizeOf(f32), @intToPtr(*const void, @intCast(usize, cursor)));
             c.glEnableVertexAttribArray(2);
 
             cursor += size;
@@ -147,7 +126,7 @@ pub const RenderDataObject = struct {
             render_data_object.ebo = 0;
             c.glGenBuffers(1, &render_data_object.ebo.?);
             c.glBindBuffer(c.GL_ELEMENT_ARRAY_BUFFER, render_data_object.ebo.?);
-            c.glBufferData(c.GL_ELEMENT_ARRAY_BUFFER, @intCast(isize, len) * @sizeOf(i32), @ptrCast(*const c_void, indices.items), c.GL_STATIC_DRAW);
+            c.glBufferData(c.GL_ELEMENT_ARRAY_BUFFER, @intCast(isize, len) * @sizeOf(i32), @ptrCast(*const void, indices.items), c.GL_STATIC_DRAW);
         }
 
         c.glBindBuffer(c.GL_ARRAY_BUFFER, 0);
@@ -155,25 +134,14 @@ pub const RenderDataObject = struct {
 
         return render_data_object;
     }
-
 };
 
-pub fn draw_geometry(obj: *const GeometryObject, shader: *const Shader, model: Mat4, color: ?Vec4, only_color: bool) void {
+pub fn draw_geometry(obj: *const GeometryObject, shader: *const Shader, model: Mat4, color: ?Vec4) void {
     c.glBindVertexArray(obj.gl.vao);
     shader.setMat4("model", &model);
 
     if (color) |rgba| {
         shader.setRgba("color", &rgba);
-    }
-
-    if (obj.texture) |texture| {
-        shader.setBool("with_texture", true);
-        c.glActiveTexture(c.GL_TEXTURE0);
-        c.glBindTexture(c.GL_TEXTURE_2D, texture.id);
-    }
-
-    if (only_color) {
-        shader.setBool("with_texture", false);
     }
 
     if (obj.mesh.colors) |_| {
@@ -190,6 +158,5 @@ pub fn draw_geometry(obj: *const GeometryObject, shader: *const Shader, model: M
     // Cleanup uniforms.
     shader.setRgba("color", &Vec4.new(10, 100, 50, 1));
     shader.setMat4("model", &Mat4.identity());
-    shader.setBool("with_texture", false);
     shader.setBool("with_color", false);
 }

@@ -1,6 +1,10 @@
-const c = @import("c.zig");
+const c = @import("c.zig").glfw;
 const math = @import("std").math;
-usingnamespace @import("zalgebra");
+const za = @import("zalgebra");
+const glfw = @import("glfw");
+
+const Vec3 = za.Vec3;
+const toRadians = za.toRadians;
 
 pub const Camera = struct {
     position: Vec3,
@@ -23,44 +27,40 @@ pub const Camera = struct {
         return Self{ .position = position };
     }
 
-    pub fn update(self: *Self, window: *c.GLFWwindow, delta_time: f64, should_update: bool) void {
+    pub fn update(self: *Self, window: glfw.Window, delta_time: f64, should_update: bool) void {
         const speed: f32 = self.speed * @floatCast(f32, delta_time);
 
         self.should_update = should_update;
 
         if (self.should_update) {
-            if (c.glfwGetKey(window, c.GLFW_KEY_W) == c.GLFW_PRESS) {
+            if (window.getKey(.w) == .press) {
                 self.position = self.position.add(self.front.scale(speed));
             }
 
-            if (c.glfwGetKey(window, c.GLFW_KEY_W) == c.GLFW_PRESS) {
-                self.position = self.position.add(self.front.scale(speed));
-            }
-
-            if (c.glfwGetKey(window, c.GLFW_KEY_S) == c.GLFW_PRESS) {
+            if (window.getKey(.s) == .press) {
                 self.position = self.position.sub(self.front.scale(speed));
             }
 
-            if (c.glfwGetKey(window, c.GLFW_KEY_A) == c.GLFW_PRESS) {
+            if (window.getKey(.a) == .press) {
                 self.position = self.position.sub((self.front.cross(self.up).norm()).scale(speed));
             }
 
-            if (c.glfwGetKey(window, c.GLFW_KEY_D) == c.GLFW_PRESS) {
+            if (window.getKey(.d) == .press) {
                 self.position = self.position.add((self.front.cross(self.up).norm()).scale(speed));
             }
 
-            if (c.glfwGetKey(window, c.GLFW_KEY_E) == c.GLFW_PRESS) {
+            if (window.getKey(.e) == .press) {
                 self.position = self.position.add(self.up.scale(speed));
             }
 
-            if (c.glfwGetKey(window, c.GLFW_KEY_Q) == c.GLFW_PRESS) {
+            if (window.getKey(.q) == .press) {
                 self.position = self.position.sub(self.up.scale(speed));
             }
         }
 
-        var pos_x: f64 = 0;
-        var pos_y: f64 = 0;
-        c.glfwGetCursorPos(window, &pos_x, &pos_y);
+        const pos = window.getCursorPos() catch unreachable;
+        var pos_x: f64 = pos.xpos;
+        var pos_y: f64 = pos.ypos;
 
         if (self.is_first_mouse or !self.should_update) {
             self.last_cursor_pos_x = pos_x;
@@ -89,9 +89,9 @@ pub const Camera = struct {
             self.pitch = -89.0;
 
         var direction: Vec3 = undefined;
-        direction.x = @floatCast(f32, math.cos(toRadians(self.yaw)) * math.cos(toRadians(self.pitch)));
-        direction.y = @floatCast(f32, math.sin(toRadians(self.pitch)));
-        direction.z = @floatCast(f32, math.sin(toRadians(self.yaw)) * math.cos(toRadians(self.pitch)));
+        direction.data[0] = @floatCast(f32, math.cos(toRadians(self.yaw)) * math.cos(toRadians(self.pitch)));
+        direction.data[1] = @floatCast(f32, math.sin(toRadians(self.pitch)));
+        direction.data[2] = @floatCast(f32, math.sin(toRadians(self.yaw)) * math.cos(toRadians(self.pitch)));
         self.front = direction.norm();
     }
 };

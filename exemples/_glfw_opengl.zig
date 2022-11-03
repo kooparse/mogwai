@@ -1,12 +1,20 @@
 const std = @import("std");
-const c = @import("common/c.zig");
 const primitive = @import("common/primitive.zig");
-const opengl = @import("common/opengl.zig");
-usingnamespace @import("common/camera.zig");
-usingnamespace @import("common/shader.zig");
+const c = @import("./common/c.zig").glfw;
 
-usingnamespace @import("zalgebra");
-usingnamespace @import("mogwai");
+const opengl = @import("common/opengl.zig");
+const Camera = @import("common/camera.zig").Camera;
+const Shader = @import("common/shader.zig").Shader;
+
+const glfw = @import("glfw");
+const za = @import("zalgebra");
+const Mogwai = @import("mogwai").Mogwai;
+const Mode = @import("mogwai").Mode;
+const GizmoItem = @import("mogwai").GizmoItem;
+
+const Vec3 = za.Vec3;
+const Vec4 = za.Vec4;
+const Mat4 = za.Mat4;
 
 const panic = std.debug.panic;
 const print = std.debug.print;
@@ -17,27 +25,25 @@ const WINDOW_DPI: i32 = 2;
 const WINDOW_NAME = "Game";
 
 pub fn main() !void {
-    if (c.glfwInit() == c.GL_FALSE) {
+    glfw.init(.{}) catch {
         panic("Failed to intialize GLFW.\n", .{});
-    }
+    };
 
-    c.glfwWindowHint(c.GLFW_CONTEXT_VERSION_MAJOR, 3);
-    c.glfwWindowHint(c.GLFW_CONTEXT_VERSION_MINOR, 2);
-    c.glfwWindowHint(c.GLFW_OPENGL_FORWARD_COMPAT, c.GL_TRUE);
-    c.glfwWindowHint(c.GLFW_OPENGL_PROFILE, c.GLFW_OPENGL_CORE_PROFILE);
-
-    const window = c.glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME, null, null) orelse {
+    const window = glfw.Window.create(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME, null, null, .{
+        .context_version_major = 3,
+        .context_version_minor = 2,
+        .opengl_forward_compat = true,
+        .opengl_profile = .opengl_core_profile,
+    }) catch {
         panic("Unable to create window.\n", .{});
     };
 
-    c.glfwMakeContextCurrent(window);
+    try glfw.makeContextCurrent(window);
+
     c.glEnable(c.GL_DEPTH_TEST);
 
-    c.glfwSwapBuffers(window);
-    c.glfwPollEvents();
-
-    defer c.glfwDestroyWindow(window);
-    defer c.glfwTerminate();
+    defer window.destroy();
+    defer glfw.terminate();
 
     const default_vert = @embedFile("assets/default.vert");
     const default_frag = @embedFile("assets/default.frag");
@@ -52,24 +58,24 @@ pub fn main() !void {
     });
 
     var camera = Camera.init(Vec3.new(0.2, 0.8, -3));
-    var view = lookAt(camera.position, Vec3.add(camera.position, camera.front), Vec3.up());
-    const proj = perspective(45, @intToFloat(f32, WINDOW_WIDTH) / @intToFloat(f32, WINDOW_HEIGHT), 0.1, 100);
+    var view = za.lookAt(camera.position, Vec3.add(camera.position, camera.front), Vec3.up());
+    const proj = za.perspective(45, @intToFloat(f32, WINDOW_WIDTH) / @intToFloat(f32, WINDOW_HEIGHT), 0.1, 100);
 
-    var our_target_object = try opengl.GeometryObject.new(&primitive.CUBE_VERTICES, &primitive.CUBE_INDICES, &primitive.CUBE_UV_COORDS, &primitive.CUBE_COLORS, null);
+    var our_target_object = try opengl.GeometryObject.new(&primitive.CUBE_VERTICES, &primitive.CUBE_INDICES, &primitive.CUBE_COLORS, null);
     defer our_target_object.deinit();
 
-    var x_axis = try opengl.GeometryObject.new(&gizmo.meshes.move_axis.x, &gizmo.meshes.move_axis.indices, null, null, null);
-    var y_axis = try opengl.GeometryObject.new(&gizmo.meshes.move_axis.y, &gizmo.meshes.move_axis.indices, null, null, null);
-    var z_axis = try opengl.GeometryObject.new(&gizmo.meshes.move_axis.z, &gizmo.meshes.move_axis.indices, null, null, null);
-    var yz = try opengl.GeometryObject.new(&gizmo.meshes.move_panels.yz, &gizmo.meshes.move_panels.indices, null, null, null);
-    var xz = try opengl.GeometryObject.new(&gizmo.meshes.move_panels.xz, &gizmo.meshes.move_panels.indices, null, null, null);
-    var xy = try opengl.GeometryObject.new(&gizmo.meshes.move_panels.xy, &gizmo.meshes.move_panels.indices, null, null, null);
-    var scale_x = try opengl.GeometryObject.new(&gizmo.meshes.scale_axis.x, &gizmo.meshes.scale_axis.indices, null, null, null);
-    var scale_y = try opengl.GeometryObject.new(&gizmo.meshes.scale_axis.y, &gizmo.meshes.scale_axis.indices, null, null, null);
-    var scale_z = try opengl.GeometryObject.new(&gizmo.meshes.scale_axis.z, &gizmo.meshes.scale_axis.indices, null, null, null);
-    var rotate_x = try opengl.GeometryObject.new(&gizmo.meshes.rotate_axis.x, null, null, null, null);
-    var rotate_y = try opengl.GeometryObject.new(&gizmo.meshes.rotate_axis.y, null, null, null, null);
-    var rotate_z = try opengl.GeometryObject.new(&gizmo.meshes.rotate_axis.z, null, null, null, null);
+    var x_axis = try opengl.GeometryObject.new(&gizmo.meshes.move_axis.x, &gizmo.meshes.move_axis.indices, null, null);
+    var y_axis = try opengl.GeometryObject.new(&gizmo.meshes.move_axis.y, &gizmo.meshes.move_axis.indices, null, null);
+    var z_axis = try opengl.GeometryObject.new(&gizmo.meshes.move_axis.z, &gizmo.meshes.move_axis.indices, null, null);
+    var yz = try opengl.GeometryObject.new(&gizmo.meshes.move_panels.yz, &gizmo.meshes.move_panels.indices, null, null);
+    var xz = try opengl.GeometryObject.new(&gizmo.meshes.move_panels.xz, &gizmo.meshes.move_panels.indices, null, null);
+    var xy = try opengl.GeometryObject.new(&gizmo.meshes.move_panels.xy, &gizmo.meshes.move_panels.indices, null, null);
+    var scale_x = try opengl.GeometryObject.new(&gizmo.meshes.scale_axis.x, &gizmo.meshes.scale_axis.indices, null, null);
+    var scale_y = try opengl.GeometryObject.new(&gizmo.meshes.scale_axis.y, &gizmo.meshes.scale_axis.indices, null, null);
+    var scale_z = try opengl.GeometryObject.new(&gizmo.meshes.scale_axis.z, &gizmo.meshes.scale_axis.indices, null, null);
+    var rotate_x = try opengl.GeometryObject.new(&gizmo.meshes.rotate_axis.x, null, null, null);
+    var rotate_y = try opengl.GeometryObject.new(&gizmo.meshes.rotate_axis.y, null, null, null);
+    var rotate_z = try opengl.GeometryObject.new(&gizmo.meshes.rotate_axis.z, null, null, null);
 
     defer yz.deinit();
     defer xz.deinit();
@@ -91,11 +97,10 @@ pub fn main() !void {
     var gizmo_mode = Mode.Move;
 
     while (!shouldClose) {
-        c.glfwPollEvents();
+        try glfw.pollEvents();
         c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT);
 
-        shouldClose = c.glfwWindowShouldClose(window) == c.GL_TRUE or
-            c.glfwGetKey(window, c.GLFW_KEY_ESCAPE) == c.GLFW_PRESS;
+        shouldClose = window.shouldClose() or window.getKey(.escape) == .press;
 
         // Compute times between frames (delta time).
         {
@@ -108,28 +113,26 @@ pub fn main() !void {
         shader.setMat4("projection", &proj);
         shader.setMat4("view", &view);
 
-        const is_pressed = c.glfwGetMouseButton(window, c.GLFW_MOUSE_BUTTON_LEFT) == c.GLFW_PRESS;
-        var pos_x: f64 = 0;
-        var pos_y: f64 = 0;
-        c.glfwGetCursorPos(window, &pos_x, &pos_y);
+        const is_pressed = window.getMouseButton(.left) == .press;
+        const cursorPos = try window.getCursorPos();
 
-        camera.update(window, delta_time, c.glfwGetKey(window, c.GLFW_KEY_LEFT_SHIFT) == c.GLFW_PRESS);
+        camera.update(window, delta_time, window.getKey(.left_shift) == .press);
 
-        if (c.glfwGetKey(window, c.GLFW_KEY_LEFT_SHIFT) == c.GLFW_PRESS) {
-            c.glfwSetInputMode(window, c.GLFW_CURSOR, c.GLFW_CURSOR_DISABLED);
-            view = lookAt(camera.position, Vec3.add(camera.position, camera.front), camera.up);
+        if (window.getKey(.left_shift) == .press) {
+          try window.setInputModeCursor(.disabled);
+            view = za.lookAt(camera.position, Vec3.add(camera.position, camera.front), camera.up);
         } else {
-            c.glfwSetInputMode(window, c.GLFW_CURSOR, c.GLFW_CURSOR_NORMAL);
+          try window.setInputModeCursor(.normal);
         }
 
-        gizmo.setCursor(pos_x, pos_y, is_pressed);
+        gizmo.setCursor(cursorPos.xpos, cursorPos.ypos, is_pressed);
         gizmo.setCamera(view, proj);
 
-        if (c.glfwGetKey(window, c.GLFW_KEY_M) == c.GLFW_PRESS) {
+        if (window.getKey(.m) == .press) {
             gizmo_mode = Mode.Move;
-        } else if (c.glfwGetKey(window, c.GLFW_KEY_R) == c.GLFW_PRESS) {
+        } else if (window.getKey(.r) == .press) {
             gizmo_mode = Mode.Rotate;
-        } else if (c.glfwGetKey(window, c.GLFW_KEY_T) == c.GLFW_PRESS) {
+        } else if (window.getKey(.t) == .press) {
             gizmo_mode = Mode.Scale;
         }
 
@@ -150,7 +153,7 @@ pub fn main() !void {
         }
 
         // Render our target object.
-        opengl.draw_geometry(&our_target_object, &shader, target_model, null, false);
+        opengl.draw_geometry(&our_target_object, &shader, target_model, null);
 
         // Render our magnifico gizmo!
         {
@@ -164,34 +167,34 @@ pub fn main() !void {
             switch (gizmo_mode) {
                 Mode.Move => {
                     // Render all panels.
-                    opengl.draw_geometry(&yz, &shader, model, Vec4.new(0, 100, 255, if (gizmo.isHover(GizmoItem.PanelYZ)) 1 else alpha), true);
-                    opengl.draw_geometry(&xz, &shader, model, Vec4.new(100, 255, 0, if (gizmo.isHover(GizmoItem.PanelXZ)) 1 else alpha), true);
-                    opengl.draw_geometry(&xy, &shader, model, Vec4.new(255, 0, 255, if (gizmo.isHover(GizmoItem.PanelXY)) 1 else alpha), true);
+                    opengl.draw_geometry(&yz, &shader, model, Vec4.new(0, 100, 255, if (gizmo.isHover(GizmoItem.PanelYZ)) 1 else alpha));
+                    opengl.draw_geometry(&xz, &shader, model, Vec4.new(100, 255, 0, if (gizmo.isHover(GizmoItem.PanelXZ)) 1 else alpha));
+                    opengl.draw_geometry(&xy, &shader, model, Vec4.new(255, 0, 255, if (gizmo.isHover(GizmoItem.PanelXY)) 1 else alpha));
 
                     // Render all axis.
-                    opengl.draw_geometry(&x_axis, &shader, model, Vec4.new(255, 0, 0, if (gizmo.isHover(GizmoItem.ArrowX)) 1 else alpha), true);
-                    opengl.draw_geometry(&y_axis, &shader, model, Vec4.new(0, 255, 0, if (gizmo.isHover(GizmoItem.ArrowY)) 1 else alpha), true);
-                    opengl.draw_geometry(&z_axis, &shader, model, Vec4.new(0, 0, 255, if (gizmo.isHover(GizmoItem.ArrowZ)) 1 else alpha), true);
+                    opengl.draw_geometry(&x_axis, &shader, model, Vec4.new(255, 0, 0, if (gizmo.isHover(GizmoItem.ArrowX)) 1 else alpha));
+                    opengl.draw_geometry(&y_axis, &shader, model, Vec4.new(0, 255, 0, if (gizmo.isHover(GizmoItem.ArrowY)) 1 else alpha));
+                    opengl.draw_geometry(&z_axis, &shader, model, Vec4.new(0, 0, 255, if (gizmo.isHover(GizmoItem.ArrowZ)) 1 else alpha));
                 },
                 Mode.Rotate => {
                     c.glEnable(c.GL_DEPTH_TEST);
-                    opengl.draw_geometry(&rotate_x, &shader, model, Vec4.new(255, 0, 0, if (gizmo.isHover(GizmoItem.RotateZ)) 1 else alpha), true);
-                    opengl.draw_geometry(&rotate_y, &shader, model, Vec4.new(0, 255, 0, if (gizmo.isHover(GizmoItem.RotateX)) 1 else alpha), true);
-                    opengl.draw_geometry(&rotate_z, &shader, model, Vec4.new(0, 0, 255, if (gizmo.isHover(GizmoItem.RotateY)) 1 else alpha), true);
+                    opengl.draw_geometry(&rotate_x, &shader, model, Vec4.new(255, 0, 0, if (gizmo.isHover(GizmoItem.RotateZ)) 1 else alpha));
+                    opengl.draw_geometry(&rotate_y, &shader, model, Vec4.new(0, 255, 0, if (gizmo.isHover(GizmoItem.RotateX)) 1 else alpha));
+                    opengl.draw_geometry(&rotate_z, &shader, model, Vec4.new(0, 0, 255, if (gizmo.isHover(GizmoItem.RotateY)) 1 else alpha));
                     c.glDisable(c.GL_DEPTH_TEST);
                 },
                 Mode.Scale => {
-                    opengl.draw_geometry(&scale_x, &shader, model, Vec4.new(255, 0, 0, if (gizmo.isHover(GizmoItem.ScalerX)) 1 else alpha), true);
-                    opengl.draw_geometry(&scale_y, &shader, model, Vec4.new(0, 255, 0, if (gizmo.isHover(GizmoItem.ScalerY)) 1 else alpha), true);
-                    opengl.draw_geometry(&scale_z, &shader, model, Vec4.new(0, 0, 255, if (gizmo.isHover(GizmoItem.ScalerZ)) 1 else alpha), true);
+                    opengl.draw_geometry(&scale_x, &shader, model, Vec4.new(255, 0, 0, if (gizmo.isHover(GizmoItem.ScalerX)) 1 else alpha));
+                    opengl.draw_geometry(&scale_y, &shader, model, Vec4.new(0, 255, 0, if (gizmo.isHover(GizmoItem.ScalerY)) 1 else alpha));
+                    opengl.draw_geometry(&scale_z, &shader, model, Vec4.new(0, 0, 255, if (gizmo.isHover(GizmoItem.ScalerZ)) 1 else alpha));
                 },
-                else => {}
+                else => {},
             }
 
             c.glDisable(c.GL_BLEND);
             c.glEnable(c.GL_DEPTH_TEST);
         }
 
-        c.glfwSwapBuffers(window);
+        try window.swapBuffers();
     }
 }

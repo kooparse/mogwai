@@ -1,10 +1,16 @@
 const std = @import("std");
 const math = std.math;
 const panic = std.debug.panic;
-usingnamespace @import("zalgebra");
+const za = @import("zalgebra");
 
 pub const Mode = enum { None, Move, Rotate, Scale };
 pub const State = enum { Idle, Hover, Dragging };
+
+const Vec2 = za.Vec2;
+const Vec3 = za.Vec3;
+const Vec4 = za.Vec4;
+const Quat = za.Quat;
+const Mat4 = za.Mat4;
 
 /// Ray used to store the projected cursor ray.
 const Ray = struct {
@@ -398,9 +404,9 @@ pub const Mogwai = struct {
                     var diff = p.sub(self.click_offset);
 
                     if (self.config.snap_axis) |snap| {
-                        diff.x = math.floor(diff.x / snap) * snap;
-                        diff.y = math.floor(diff.y / snap) * snap;
-                        diff.z = math.floor(diff.z / snap) * snap;
+                        diff.data[0] = math.floor(diff.x() / snap) * snap;
+                        diff.data[1] = math.floor(diff.y() / snap) * snap;
+                        diff.data[2] = math.floor(diff.z() / snap) * snap;
                     }
 
                     result = .{};
@@ -410,31 +416,31 @@ pub const Mogwai = struct {
 
                     switch (self.active.?) {
                         GizmoItem.ArrowX => {
-                            result.?.position = original.position.add(Vec3.new(diff.x, 0, 0));
+                            result.?.position = original.position.add(Vec3.new(diff.x(), 0, 0));
                         },
                         GizmoItem.ArrowY => {
-                            result.?.position = original.position.add(Vec3.new(0, diff.y, 0));
+                            result.?.position = original.position.add(Vec3.new(0, diff.y(), 0));
                         },
                         GizmoItem.ArrowZ => {
-                            result.?.position = original.position.add(Vec3.new(0, 0, diff.z));
+                            result.?.position = original.position.add(Vec3.new(0, 0, diff.z()));
                         },
                         GizmoItem.PanelYZ => {
-                            result.?.position = original.position.add(Vec3.new(0, diff.y, diff.z));
+                            result.?.position = original.position.add(Vec3.new(0, diff.y(), diff.z()));
                         },
                         GizmoItem.PanelXZ => {
-                            result.?.position = original.position.add(Vec3.new(diff.x, 0, diff.z));
+                            result.?.position = original.position.add(Vec3.new(diff.x(), 0, diff.z()));
                         },
                         GizmoItem.PanelXY => {
-                            result.?.position = original.position.add(Vec3.new(diff.x, diff.y, 0));
+                            result.?.position = original.position.add(Vec3.new(diff.x(), diff.y(), 0));
                         },
                         GizmoItem.ScalerX => {
-                            result.?.scale = Vec3.max(original.scale.add(Vec3.new(diff.x, 0, 0)), epsilon_vec);
+                            result.?.scale = Vec3.max(original.scale.add(Vec3.new(diff.x(), 0, 0)), epsilon_vec);
                         },
                         GizmoItem.ScalerY => {
-                            result.?.scale = Vec3.max(original.scale.add(Vec3.new(0, diff.y, 0)), epsilon_vec);
+                            result.?.scale = Vec3.max(original.scale.add(Vec3.new(0, diff.y(), 0)), epsilon_vec);
                         },
                         GizmoItem.ScalerZ => {
-                            result.?.scale = Vec3.max(original.scale.add(Vec3.new(0, 0, -diff.z)), epsilon_vec);
+                            result.?.scale = Vec3.max(original.scale.add(Vec3.new(0, 0, -diff.z())), epsilon_vec);
                         },
                         else => {}
                     }
@@ -487,7 +493,7 @@ pub const Mogwai = struct {
                     const dot_product = math.min(1, Vec3.dot(self.ended_arm.?, self.started_arm.?));
                     // The `acos` of a dot product will gives us the angle between two vectors, in radians.
                     // We just have to convert it to degrees.
-                    var angle = toDegrees(math.acos(dot_product));
+                    var angle = za.toDegrees(math.acos(dot_product));
 
                     if (self.config.snap_angle) |snap| {
                         angle = math.floor(angle / snap) * snap;
@@ -498,7 +504,7 @@ pub const Mogwai = struct {
 
                     const cross_product = Vec3.cross(self.started_arm.?, self.ended_arm.?).norm();
                     const new_rot = Quat.fromAxis(angle, cross_product);
-                    const rotation = Quat.mult(new_rot, self.original_transform.rotation);
+                    const rotation = Quat.mul(new_rot, self.original_transform.rotation);
 
                     result = .{ .rotation = rotation };
                 }
@@ -515,15 +521,15 @@ pub const Mogwai = struct {
         var tmin = -math.inf_f32;
         var tmax = math.inf_f32;
 
-        var i: i32 = 0;
+        var i: usize = 0;
         while (i < 3) : (i += 1) {
-            if (r.dir.at(i) != 0) {
-                const t1 = (min.at(i) - r.origin.at(i))/r.dir.at(i);
-                const t2 = (max.at(i) - r.origin.at(i))/r.dir.at(i);
+            if (r.dir.data[i] != 0) {
+                const t1 = (min.data[i] - r.origin.data[i])/r.dir.data[i];
+                const t2 = (max.data[i] - r.origin.data[i])/r.dir.data[i];
 
                 tmin = math.max(tmin, math.min(t1, t2));
                 tmax = math.min(tmax, math.max(t1, t2));
-            } else if (r.origin.at(i) < min.at(i) or r.origin.at(i) > max.at(i)) {
+            } else if (r.origin.data[i] < min.data[i] or r.origin.data[i] > max.data[i]) {
                 return null;
             }
         }
@@ -539,7 +545,8 @@ pub const Mogwai = struct {
         var intersection: f32 = undefined;
         const denom: f32 = Vec3.dot(normal, ray.dir);
 
-        if (math.absFloat(denom) > 1e-6) {
+        // TODO: absMath?
+        if (denom > 1e-6) {
             const line = Vec3.sub(plane_pos, ray.origin);
             intersection = Vec3.dot(line, normal) / denom;
 
@@ -599,13 +606,13 @@ pub const Mogwai = struct {
             1 - (@floatCast(f32, cursor.y) * @intToFloat(f32, config.dpi)) / @intToFloat(f32, config.screen_height)
         );
 
-        const clip_space = Vec4.new(clip_ndc.x, clip_ndc.y, -1, 1);
-        const eye_tmp = Mat4.multByVec4(Mat4.inv(cam.proj), clip_space);
-        const world_tmp = Mat4.multByVec4(Mat4.inv(cam.view), Vec4.new(eye_tmp.x, eye_tmp.y, -1, 0));
+        const clip_space = Vec4.new(clip_ndc.x(), clip_ndc.y(), -1, 1);
+        const eye_tmp = Mat4.mulByVec4(Mat4.inv(cam.proj), clip_space);
+        const world_tmp = Mat4.mulByVec4(Mat4.inv(cam.view), Vec4.new(eye_tmp.x(), eye_tmp.y(), -1, 0));
 
         return .{
             .origin = pos,
-            .dir = Vec3.new(world_tmp.x, world_tmp.y, world_tmp.z).norm(),
+            .dir = Vec3.new(world_tmp.x(), world_tmp.y(), world_tmp.z()).norm(),
         };
     }
 
@@ -616,18 +623,18 @@ pub const Mogwai = struct {
         const b = max_bounds;
 
         return .{
-          a.x, a.y, a.z , a.x, a.y, b.z, 
-          a.x, b.y, b.z , a.x, b.y, a.z, 
-          b.x, a.y, a.z , b.x, b.y, a.z, 
-          b.x, b.y, b.z , b.x, a.y, b.z, 
-          a.x, a.y, a.z , b.x, a.y, a.z, 
-          b.x, a.y, b.z , a.x, a.y, b.z, 
-          a.x, b.y, a.z , a.x, b.y, b.z, 
-          b.x, b.y, b.z , b.x, b.y, a.z, 
-          a.x, a.y, a.z , a.x, b.y, a.z, 
-          b.x, b.y, a.z , b.x, a.y, a.z, 
-          a.x, a.y, b.z , b.x, a.y, b.z, 
-          b.x, b.y, b.z , a.x, b.y, b.z, 
+          a.x(), a.y(), a.z(), a.x(), a.y(), b.z(), 
+          a.x(), b.y(), b.z(), a.x(), b.y(), a.z(), 
+          b.x(), a.y(), a.z(), b.x(), b.y(), a.z(), 
+          b.x(), b.y(), b.z(), b.x(), a.y(), b.z(), 
+          a.x(), a.y(), a.z(), b.x(), a.y(), a.z(), 
+          b.x(), a.y(), b.z(), a.x(), a.y(), b.z(), 
+          a.x(), b.y(), a.z(), a.x(), b.y(), b.z(), 
+          b.x(), b.y(), b.z(), b.x(), b.y(), a.z(), 
+          a.x(), a.y(), a.z(), a.x(), b.y(), a.z(), 
+          b.x(), b.y(), a.z(), b.x(), a.y(), a.z(), 
+          a.x(), a.y(), b.z(), b.x(), a.y(), b.z(), 
+          b.x(), b.y(), b.z(), a.x(), b.y(), b.z(), 
       };
 
     }
@@ -717,7 +724,7 @@ pub const Mogwai = struct {
         var segment_vertex: [segments]Vec3 = undefined;
 
         while (deg < max_deg) : (deg += @divExact(max_deg, segments)) {
-            const angle = toRadians(@intToFloat(f32, deg));
+            const angle = za.toRadians(@intToFloat(f32, deg));
             const x = math.cos(angle) * radius;
             const y = math.sin(angle) * radius;
 
@@ -769,21 +776,21 @@ pub const Mogwai = struct {
 
         switch (axis) {
             GizmoItem.RotateX => {
-                normal = Vec3.new(-line.y, line.x, 0).norm();
-                miter0 = Vec3.new(-t0.y, t0.x, 0);
-                miter1 = Vec3.new(-t1.y, t1.x, 0);
+                normal = Vec3.new(-line.y(), line.x(), 0).norm();
+                miter0 = Vec3.new(-t0.y(), t0.x(), 0);
+                miter1 = Vec3.new(-t1.y(), t1.x(), 0);
 
             },
             GizmoItem.RotateY => {
-                normal = Vec3.new(0, -line.z, line.y).norm();
-                miter0 = Vec3.new(0, -t0.z, t0.y);
-                miter1 = Vec3.new(0, -t1.z, t1.y);
+                normal = Vec3.new(0, -line.z(), line.y()).norm();
+                miter0 = Vec3.new(0, -t0.z(), t0.y());
+                miter1 = Vec3.new(0, -t1.z(), t1.y());
 
             },
             GizmoItem.RotateZ => {
-                normal = Vec3.new(-line.z, 0, line.x).norm();
-                miter0 = Vec3.new(-t0.z, 0, t0.x);
-                miter1 = Vec3.new(-t1.z, 0, t1.x);
+                normal = Vec3.new(-line.z(), 0, line.x()).norm();
+                miter0 = Vec3.new(-t0.z(), 0, t0.x());
+                miter1 = Vec3.new(-t1.z(), 0, t1.x());
 
             },
             else => std.debug.panic("Object selected isn't a rotate axis.\n", .{})
@@ -798,13 +805,13 @@ pub const Mogwai = struct {
         const d = Vec3.sub(p1, Vec3.scale(miter1, length1));
 
         return .{
-            a.x, a.y, a.z,
-            b.x, b.y, b.z,
-            e.x, e.y, e.z,
+            a.x(), a.y(), a.z(),
+            b.x(), b.y(), b.z(),
+            e.x(), e.y(), e.z(),
 
-            b.x, b.y, b.z,
-            d.x, d.y, d.z,
-            e.x, e.y, e.z,
+            b.x(), b.y(), b.z(),
+            d.x(), d.y(), d.z(),
+            e.x(), e.y(), e.z(),
         };
     }
 };
