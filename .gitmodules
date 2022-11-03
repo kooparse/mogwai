@@ -1,3 +1,6 @@
 [submodule "src/libs/zalgebra"]
 	path = src/libs/zalgebra
 	url = git@github.com:kooparse/zalgebra.git
+[submodule "src/libs/mach-glfw"]
+	path = src/libs/mach-glfw
+	url = git@github.com:hexops/mach-glfw.git

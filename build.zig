@@ -1,18 +1,16 @@
 const std = @import("std");
 const Builder = std.build.Builder;
 const Pkg = std.build.Pkg;
+const FileSource = std.build.FileSource;
 const builtin = @import("builtin");
 
-pub fn build(b: *Builder) void {
+pub fn build(b: *Builder) !void {
     const mode = b.standardReleaseOptions();
 
     // Build step for the library
     {
         var tests = b.addTest("src/main.zig");
-        tests.addPackage(.{
-            .name = "zalgebra",
-            .path = "src/libs/zalgebra/src/main.zig",
-        });
+        tests.addPackagePath("zalgebra", "src/libs/zalgebra/src/main.zig");
         tests.setBuildMode(mode);
 
         const test_step = b.step("test", "Run tests");
@@ -24,21 +22,17 @@ pub fn build(b: *Builder) void {
         var exe = b.addExecutable("glfw_opengl", "exemples/_glfw_opengl.zig");
         exe.setBuildMode(mode);
 
-        const zalgebra = Pkg{
-            .name = "zalgebra",
-            .path = "src/libs/zalgebra/src/main.zig",
-        };
+        const zalgebra = Pkg{ .name = "zalgebra", .source = FileSource.relative("src/libs/zalgebra/src/main.zig") };
 
         exe.addPackage(zalgebra);
         exe.addPackage(.{
             .name = "mogwai",
-            .path = "src/main.zig",
+            .source = FileSource.relative("src/main.zig"),
             .dependencies = &[_]Pkg{zalgebra},
         });
 
         switch (builtin.os.tag) {
             .macos => {
-                exe.addFrameworkDir("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks");
                 exe.linkFramework("OpenGL");
             },
             else => {
@@ -46,8 +40,10 @@ pub fn build(b: *Builder) void {
             },
         }
 
-        exe.linkSystemLibrary("glfw");
-        exe.linkSystemLibrary("epoxy");
+        const glfw = @import("src/libs/mach-glfw/build.zig");
+
+        exe.addPackage(glfw.pkg);
+        try glfw.link(b, exe, .{});
         exe.install();
 
         const play = b.step("run", "Run Mogwai exemple");
